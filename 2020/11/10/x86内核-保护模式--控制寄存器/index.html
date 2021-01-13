@@ -1,0 +1,469 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>x86内核-保护模式--控制寄存器 | ZDDR's blog</title><meta name="keywords" content="ZDDR,逆向,内核,Pwn"><meta name="author" content="ZDDR"><meta name="copyright" content="ZDDR"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="控制寄存器什么是控制寄存器控制寄存器是一个用于控制和确定处理器的操作模式以及当前执行任务的特性的寄存器。  控制寄存器在x86下一共有5个（CR0～CR4），其中CR1保留不用。  CR0 – 总闸 CR2 – 缺页异常 CR3 –页目录表基址 CR4 – 分闸  CR0 – 总闸    名称 位 说明    PE 0 Protection Enable开启段保护 (没有开启页保护)   MP 1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="x86内核-保护模式--控制寄存器">
+<meta property="og:url" content="https://zddr.net/2020/11/10/x86%E5%86%85%E6%A0%B8-%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F--%E6%8E%A7%E5%88%B6%E5%AF%84%E5%AD%98%E5%99%A8/index.html">
+<meta property="og:site_name" content="ZDDR&#39;s blog">
+<meta property="og:description" content="控制寄存器什么是控制寄存器控制寄存器是一个用于控制和确定处理器的操作模式以及当前执行任务的特性的寄存器。  控制寄存器在x86下一共有5个（CR0～CR4），其中CR1保留不用。  CR0 – 总闸 CR2 – 缺页异常 CR3 –页目录表基址 CR4 – 分闸  CR0 – 总闸    名称 位 说明    PE 0 Protection Enable开启段保护 (没有开启页保护)   MP 1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.ax1x.com/2020/02/11/1oFBM8.png">
+<meta property="article:published_time" content="2020-11-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-11-17T16:00:00.000Z">
+<meta property="article:author" content="ZDDR">
+<meta property="article:tag" content="ZDDR,逆向,内核,Pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.ax1x.com/2020/02/11/1oFBM8.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zddr.net/2020/11/10/x86%E5%86%85%E6%A0%B8-%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F--%E6%8E%A7%E5%88%B6%E5%AF%84%E5%AD%98%E5%99%A8/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ZDDR","link":"链接: ","source":"来源: ZDDR's blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-11-18 00:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://gitee.com/ZDDR/blog_img/raw/master/img/index_img/%E8%87%AA%E5%B7%B1%E7%9A%84%E5%A4%B4%E5%83%8F.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">18</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s2.ax1x.com/2020/02/11/1oFBM8.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZDDR's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">x86内核-保护模式--控制寄存器</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-11-09T16:00:00.000Z" title="发表于 2020-11-10 00:00:00">2020-11-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-11-17T16:00:00.000Z" title="更新于 2020-11-18 00:00:00">2020-11-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/windows%E5%86%85%E6%A0%B8/">windows内核</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="控制寄存器"><a href="#控制寄存器" class="headerlink" title="控制寄存器"></a>控制寄存器</h1><h2 id="什么是控制寄存器"><a href="#什么是控制寄存器" class="headerlink" title="什么是控制寄存器"></a>什么是控制寄存器</h2><p>控制寄存器是一个用于控制和确定处理器的操作模式以及当前执行任务的特性的寄存器。</p>
+<p><img src="https://gitee.com/ZDDR/blog_img/raw/master//img/x86_kernel_page/%E6%8E%A7%E5%88%B6%E5%AF%84%E5%AD%98%E5%99%A8%E5%9B%BE.png" alt="image-20201110145010137"></p>
+<p>控制寄存器在x86下一共有5个（CR0～CR4），其中CR1保留不用。</p>
+<ul>
+<li>CR0 – 总闸</li>
+<li>CR2 – 缺页异常</li>
+<li>CR3 –页目录表基址</li>
+<li>CR4 – 分闸</li>
+</ul>
+<h1 id="CR0-–-总闸"><a href="#CR0-–-总闸" class="headerlink" title="CR0 – 总闸"></a>CR0 – 总闸</h1><p><img src="https://gitee.com/ZDDR/blog_img/raw/master//img/x86_kernel_page/CR0%E5%9B%BE%E7%89%87.png" alt="image-20201110173652554"></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>位</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PE</td>
+<td>0</td>
+<td>Protection Enable开启段保护 (没有开启页保护)</td>
+</tr>
+<tr>
+<td>MP</td>
+<td>1</td>
+<td>监控协处理器（Monitor coProcessor或Math Present）标志。用于控制WAIT/FWAIT指令与TS标志的交互作用。如果MP=1、TS=1，那么执行WAIT指令将产生一个设备不存在异常；如果MP=0，则TS标志不会影响WAIT的执行。</td>
+</tr>
+<tr>
+<td>EM</td>
+<td>2</td>
+<td>（EMulation）标志。当该位为1时，表示处理器没有内部或外部协处理器，执行协处理器指令时会引起设备不存在异常；当为0时，表示系统有协处理器。设置这个标志可以迫使所有浮点指令使用软件来模拟。此标志还会影响MMX/SSE/SSE2/SSE3/SSSE3/SSE4 指令。</td>
+</tr>
+<tr>
+<td>TS</td>
+<td>3</td>
+<td>任务已切换（Task Switched）标志。该标志用于推迟保存任务切换时的协处理器内容，直到新任务开始实际执行协处理器指令。处理器在每次任务切换时都会设置该标志，并且在执行协处理器指令时测试该标志。任务段切换时置1，回来时清零。</td>
+</tr>
+<tr>
+<td>ET</td>
+<td>4</td>
+<td>扩展类型（Extension Type）标志。当该标志为1时，表示指明系统中有80387协处理器，并使用32位协处理器协议。ET=0指明使用80287协处理器。如果仿真位EM=1，则该位将被忽略。在处理器复位操作时，ET位会被初始化指明系统中使用的协处理器类型。如果系统中有80387，则ET被设置成1，否则若有一个80287或者没有协处理器，则ET被设置成0。</td>
+</tr>
+<tr>
+<td>NE</td>
+<td>5</td>
+<td>对于Intel 80486或以上的CPU，CR0的位5是协处理器错误（Numeric Error）标志。当设置该标志时，就启用了x87协处理器错误的内部报告机制；若复位该标志，那么就使用PC形式的x87协处理器错误报告机制。当NE为复位状态并且CPU的IGNNE输入引脚有信号时，那么数学协处理器x87错误将被忽略。当NE为复位状态并且CPU的IGNNE输入引脚无信号时，那么非屏蔽的数学协处理器x87错误将导致处理器通过FERR引脚在外部产生一个中断，并且在执行下一个等待形式浮点指令或WAIT/FWAIT指令之前立刻停止指令执行。CPU的FERR引脚用于仿真外部协处理器80387的ERROR引脚，因此通常连接到中断控制器输入请求引脚上。NE标志、IGNNE引脚和FERR引脚用于利用外部逻辑来实现PC形式的外部错误报告机制。</td>
+</tr>
+<tr>
+<td>WP</td>
+<td>16</td>
+<td>（Write Protect）写保护，当关闭时PTE的只读是无效的</td>
+</tr>
+<tr>
+<td>AM</td>
+<td>18</td>
+<td>（Alignment Mask）对齐，如果elfag.AC &amp; this= 1触发强制对齐</td>
+</tr>
+<tr>
+<td>NW</td>
+<td>29</td>
+<td>（Not Write-through）不直写，当NW和CD标志清除时，回写（Pentium 4,Intel Xeon,P6系列和奔腾处理器），或直写（对于Intel486处理器）</td>
+</tr>
+<tr>
+<td>CD</td>
+<td>30</td>
+<td>Cache Disable禁用缓存 CD=1禁用缓存 CD=0开启缓存 可用来刷新缓存</td>
+</tr>
+<tr>
+<td>PG</td>
+<td>31</td>
+<td>Paging开启页保护机制</td>
+</tr>
+</tbody></table>
+<h2 id="PE与PG"><a href="#PE与PG" class="headerlink" title="PE与PG"></a>PE与PG</h2><table>
+<thead>
+<tr>
+<th>PE</th>
+<th>PG</th>
+<th>环境</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>处理器工作在实地址模式下</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>处理器工作在没有开启分页机制的保护模式下</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>不能在没有开启段保护的时候开启页保护，会出现一个通用异常错误（13号中断）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>处理器工作在开启了分页机制的保护模式下</td>
+</tr>
+</tbody></table>
+<h2 id="MP、EM与TS"><a href="#MP、EM与TS" class="headerlink" title="MP、EM与TS"></a>MP、EM与TS</h2><p>TS、MP和EM位用于确定浮点指令或WAIT指令是否应该产生一个设备不存在（Device Not Available，DNA）异常</p>
+<table>
+<thead>
+<tr>
+<th>EM</th>
+<th>MP</th>
+<th>TS</th>
+<th>浮点</th>
+<th>WAIT/FWAIT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>#DNA异常</td>
+<td>执行</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>执行</td>
+<td>执行</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>#DNA异常</td>
+<td>#DNA异常</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>#DNA异常</td>
+<td>执行</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>#DNA异常</td>
+<td>执行</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>#DNA异常</td>
+<td>执行</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>#DNA异常</td>
+<td>#DNA异常</td>
+</tr>
+</tbody></table>
+<h1 id="CR2-–-缺页异常"><a href="#CR2-–-缺页异常" class="headerlink" title="CR2 – 缺页异常"></a>CR2 – 缺页异常</h1><p><img src="https://gitee.com/ZDDR/blog_img/raw/master//img/x86_kernel_page/CR2%E5%9B%BE%E7%89%87.png" alt="image-20201110173855053"></p>
+<p>通过之前的学习可以知道，一个线性地址是不一定会被挂上物理页的，当去访问这个线性地址的时候，如果他没有被挂上物理页，就会产生一个<strong>缺页异常</strong>，那么CPU是怎么知道你访问的是那个页的呢?</p>
+<p>假设是这段汇编访问了<strong>0x12345678</strong>这个线性地址：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mov eax,dword ptr ds:[0x12345678]</span><br></pre></td></tr></table></figure>
+<p>CPU会把<strong>0x12345678</strong>这个地址保存在CR2的这个寄存器中。</p>
+<p>如果触发了缺页异常（01号中断）的时候，就会到这个CR2寄存器中把地址取出来，挂上物理页。</p>
+<h1 id="CR3-–-页目录表基址"><a href="#CR3-–-页目录表基址" class="headerlink" title="CR3 – 页目录表基址"></a>CR3 – 页目录表基址</h1><p><img src="https://gitee.com/ZDDR/blog_img/raw/master//img/x86_kernel_page/CR3%E5%9B%BE%E7%89%87.png" alt="image-20201110173819101"></p>
+<p>存放页目录表基址的寄存器，在《x86内核-保护模式-页》中已有详细说明。</p>
+<h1 id="CR4-–-分闸"><a href="#CR4-–-分闸" class="headerlink" title="CR4 – 分闸"></a>CR4 – 分闸</h1><p><img src="https://gitee.com/ZDDR/blog_img/raw/master//img/x86_kernel_page/CR4%E5%9B%BE%E7%89%87.png" alt="image-20201110173740003"></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>位</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>VME</td>
+<td>0</td>
+<td>（Virtual-8086 Mode Extensions）当该位置1时为虚拟8086模式</td>
+</tr>
+<tr>
+<td>PVI</td>
+<td>1</td>
+<td>（Protected-Mode Virtual Interrupts）保护模式虚拟中断（启用虚拟中断的硬件支持，通常与VME位配合使用）</td>
+</tr>
+<tr>
+<td>TSD</td>
+<td>2</td>
+<td>（Time Stamp Disable）时间戳禁用，当TSD标志清除时，RDTSC指令可以在任何特权级别执行；如果设置了标志，则指令只能在特权级别0下执行。时间戳计数器在特权级别0执行时，也可以使用RDMSR指令读取。</td>
+</tr>
+<tr>
+<td>DE</td>
+<td>3</td>
+<td>（Debugging Extensions）调试扩展名，调试寄存器有8个（DR0~DR7），其中DR4和DR5是没有使用的，DE位置1时，使用DR4和DR5会导致在设置时生成未定义的操作码（#UD）异常。DE位置0时，处理器用DR6或DR7的别名引用寄存器DR4和DR5，以与为在早期IA-32处理器上运行而编写的软件兼容。</td>
+</tr>
+<tr>
+<td>PSE</td>
+<td>4</td>
+<td>（Page Size Extensions）页面大小扩展，PSE=1时启用具有32位分页的4MB页（可以有大页）；PSE=0时，32位分页只有4k的页面（只能有小页）。</td>
+</tr>
+<tr>
+<td>PAE</td>
+<td>5</td>
+<td>（Physical Address Extension）物理地址扩展，设置后，启用分页以生成物理地址超过32位（29912分页）。清除时，将物理地址限制为32位（101012分页）。</td>
+</tr>
+<tr>
+<td>MCE</td>
+<td>6</td>
+<td>（Machine-Check Enable）机器检查启用，设置时启用机器检查异常（多个一个12号中断）。</td>
+</tr>
+<tr>
+<td>PGE</td>
+<td>7</td>
+<td>（Page Global Enable）页面全局启用，这个位置1时，页的属性G位才能生效，已经在上一篇文章《x86内核-保护模式-页》中的TLB小节进行测试。</td>
+</tr>
+<tr>
+<td>PCE</td>
+<td>8</td>
+<td>（Performance-Monitoring Counter Enable）性能监视计数器启用，在设置时，任何权限下使用RDPMC指令；清除时RDPMC指令仅可以在0级保护下执行。</td>
+</tr>
+<tr>
+<td>OSFXSR</td>
+<td>9</td>
+<td>（Operating System Support for FXSAVE and FXRSTOR instructions）置1操作系统支持FXSAVE和FXRSTOR指令。</td>
+</tr>
+<tr>
+<td>OSXMMEXCPT</td>
+<td>10</td>
+<td>（Operating System Support for Unmasked SIMD Floating-Point Exceptions）操作系统支持未屏蔽SIMD浮点异常，设置时，表示操作系统支持处理未绑定SIMD浮点当SIMD浮点异常（#XM）为时调用的异常处理程序的异常生成。SIMD浮点异常仅由SSE/SSE2/SSE3/SSE4.1 SIMD浮点指令生成。操作系统或执行人员必须显式设置此标志。如果未设置此标志，处理器将每当检测到未屏蔽SIMD浮点异常时，生成无效的操作码异常（#UD）。</td>
+</tr>
+<tr>
+<td>UMIP</td>
+<td>11</td>
+<td>（User-Mode Instruction Prevention）用户模式指令预防，设置后，以下指令不能当CPL&gt;0时执行：SGDT、SIDT、SLDT、SMSW和STR。尝试执行此操作会导致generalprotection异常（#GP）。</td>
+</tr>
+<tr>
+<td>VMXE</td>
+<td>13</td>
+<td>（VMX-Enable Bit）VMX启用位，设置时启用VMX操作。</td>
+</tr>
+<tr>
+<td>SMXE</td>
+<td>14</td>
+<td>（SMX-Enable Bit）SMX启用位，在设置时启用SMX操作（上帝模式）。</td>
+</tr>
+<tr>
+<td>FSGSBASE</td>
+<td>16</td>
+<td>（FSGSBASE-Enable Bit）FSGSBASE启用位，启用指令RDFSBASE、RDGSBASE、WRFSBASE和WRGSBASE。</td>
+</tr>
+<tr>
+<td>PCIDE</td>
+<td>17</td>
+<td>（PCID-Enable Bit）PCID启用位，设置时启用进程上下文标识符（PCID）。win10的1809版本之后出现了页表隔离，一个进程R0和R3分别拥有一个CR3（UserDirectoryTableBase和DirectoryTableBase），这时就出现了一个问题，CR3切换时TLB也会切换，本来TLB就经常切换了，现在还在一个进程里弄两个CR3，那TLB存在的意义就不大了，为了解决这个问题，就使用PCID来保存同一个进程的缓存。</td>
+</tr>
+<tr>
+<td>OSXSAVE</td>
+<td>18</td>
+<td>（XSAVE and Processor Extended States-Enable Bit）XSAVE和Processor Extended States启用位，设置时，此标志：（1）表示（通过CPUID.01H:ECX.OSX保存[位27]），操作系统支持使用XGETBV，XSAVE和XRSTOR指令由通用软件实现；（2）使XSAVE和XRSTOR指令能够保存并恢复x87 FPU状态（包括MMX寄存器）、SSE状态（XMM寄存器和MXCSR），与XCR0中启用的其他处理器扩展状态一起；（3）使处理器能够执行XGETBV和XSETBV指令来读写XCR0。</td>
+</tr>
+<tr>
+<td>SMEP</td>
+<td>20</td>
+<td>（SMEP-Enable Bit）SMEP启用位，设置时启用管理器模式执行保护（SMEP）R0不能调用R3代码。</td>
+</tr>
+<tr>
+<td>SMAP</td>
+<td>21</td>
+<td>（SMAP-Enable Bit）SMAP启用位，设置时启用管理模式访问保护（SMAP）R0不能读取R3数据。</td>
+</tr>
+<tr>
+<td>PKE</td>
+<td>22</td>
+<td>（Protection-Key-Enable Bit）保护密钥启用位，启用IA-32e寻呼以关联每个线性地址与保护钥匙。PKRU寄存器指定用户模式是否为线性可以读取或写入具有该保护密钥的地址。该位还允许访问PKRU寄存器使用RDPKRU和WRPKRU指令。</td>
+</tr>
+</tbody></table>
+<h1 id="References"><a href="#References" class="headerlink" title="References:"></a>References:</h1><blockquote>
+<p>《牛逼的火哥》</p>
+</blockquote>
+<blockquote>
+<p>《64-ia-32-architectures-software-developer-vol-3a-part-1-manual》</p>
+</blockquote>
+<blockquote>
+<p>《Linux内核完全剖析 – 基于0.12内核》</p>
+</blockquote>
+<blockquote>
+<p>以及<a target="_blank" rel="noopener" href="https://www.cnblogs.com/onetrainee/">OneTrainee</a>大佬的博客</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ZDDR</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zddr.net/2020/11/10/x86%E5%86%85%E6%A0%B8-%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F--%E6%8E%A7%E5%88%B6%E5%AF%84%E5%AD%98%E5%99%A8/">https://zddr.net/2020/11/10/x86内核-保护模式--控制寄存器/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zddr.net" target="_blank">ZDDR's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://s2.ax1x.com/2020/02/11/1oFBM8.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/11/11/x86%E5%86%85%E6%A0%B8-%E9%A9%B1%E5%8A%A8/"><img class="prev-cover" src="https://s2.ax1x.com/2020/02/11/1oFBM8.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">x86内核-驱动</div></div></a></div><div class="next-post pull-right"><a href="/2020/10/29/x86%E5%86%85%E6%A0%B8-%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F--%E9%A1%B5/"><img class="next-cover" src="https://s2.ax1x.com/2020/02/11/1oFBM8.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">x86内核-保护模式--页</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">1.</span> <span class="toc-text">控制寄存器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%8E%A7%E5%88%B6%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">1.1.</span> <span class="toc-text">什么是控制寄存器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CR0-%E2%80%93-%E6%80%BB%E9%97%B8"><span class="toc-number">2.</span> <span class="toc-text">CR0 – 总闸</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#PE%E4%B8%8EPG"><span class="toc-number">2.1.</span> <span class="toc-text">PE与PG</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MP%E3%80%81EM%E4%B8%8ETS"><span class="toc-number">2.2.</span> <span class="toc-text">MP、EM与TS</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CR2-%E2%80%93-%E7%BC%BA%E9%A1%B5%E5%BC%82%E5%B8%B8"><span class="toc-number">3.</span> <span class="toc-text">CR2 – 缺页异常</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CR3-%E2%80%93-%E9%A1%B5%E7%9B%AE%E5%BD%95%E8%A1%A8%E5%9F%BA%E5%9D%80"><span class="toc-number">4.</span> <span class="toc-text">CR3 – 页目录表基址</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CR4-%E2%80%93-%E5%88%86%E9%97%B8"><span class="toc-number">5.</span> <span class="toc-text">CR4 – 分闸</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#References"><span class="toc-number">6.</span> <span class="toc-text">References:</span></a></li></ol></div></div></div></div></main><footer id="footer" style="background-image: url(https://s2.ax1x.com/2020/02/11/1oFBM8.png)"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2021 By ZDDR</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>

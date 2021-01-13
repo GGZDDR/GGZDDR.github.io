@@ -1,0 +1,356 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C语言小记 | ZDDR's blog</title><meta name="keywords" content="ZDDR,逆向,内核,Pwn"><meta name="author" content="ZDDR"><meta name="copyright" content="ZDDR"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="C语言强制转换的的一个小坑例子: 12345678CPP#include &lt;stdio.h&gt;int main()&amp;#123;	float a &#x3D; 1&#x2F;3;	printf(&quot;%f&quot;,a);	return 0;&amp;#125; 这个程序的输出结果是啥呢? 0.3? 0.33333? 都不对，这个程序的输出结果为0 虽然变量a为float类型 但是c语言对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C语言小记">
+<meta property="og:url" content="https://zddr.net/2020/02/29/C%E8%AF%AD%E8%A8%80%E5%B0%8F%E8%AE%B0/index.html">
+<meta property="og:site_name" content="ZDDR&#39;s blog">
+<meta property="og:description" content="C语言强制转换的的一个小坑例子: 12345678CPP#include &lt;stdio.h&gt;int main()&amp;#123;	float a &#x3D; 1&#x2F;3;	printf(&quot;%f&quot;,a);	return 0;&amp;#125; 这个程序的输出结果是啥呢? 0.3? 0.33333? 都不对，这个程序的输出结果为0 虽然变量a为float类型 但是c语言对">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2020/03/12/8mmKE9.png">
+<meta property="article:published_time" content="2020-02-28T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-09-06T16:00:00.000Z">
+<meta property="article:author" content="ZDDR">
+<meta property="article:tag" content="ZDDR,逆向,内核,Pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2020/03/12/8mmKE9.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zddr.net/2020/02/29/C%E8%AF%AD%E8%A8%80%E5%B0%8F%E8%AE%B0/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ZDDR","link":"链接: ","source":"来源: ZDDR's blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-09-07 00:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://gitee.com/ZDDR/blog_img/raw/master/img/index_img/%E8%87%AA%E5%B7%B1%E7%9A%84%E5%A4%B4%E5%83%8F.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">18</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s2.ax1x.com/2020/01/03/lNWQhD.jpg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZDDR's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">C语言小记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-02-28T16:00:00.000Z" title="发表于 2020-02-29 00:00:00">2020-02-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-09-06T16:00:00.000Z" title="更新于 2020-09-07 00:00:00">2020-09-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Windows%E7%BC%96%E7%A8%8B/">Windows编程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="C语言强制转换的的一个小坑"><a href="#C语言强制转换的的一个小坑" class="headerlink" title="C语言强制转换的的一个小坑"></a>C语言强制转换的的一个小坑</h1><p>例子:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CPP</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">	float a &#x3D; 1&#x2F;3;</span><br><span class="line">	printf(&quot;%f&quot;,a);</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个程序的输出结果是啥呢? <strong>0.3</strong>? <strong>0.33333</strong>?</p>
+<p>都不对，这个程序的输出结果为<strong>0</strong></p>
+<p>虽然变量a为float类型 但是c语言对变量赋值的过程是先把表达式 <strong>1/3</strong> 的结果先计算出来 再放入变量a中<br>在计算表达式 <strong>1/3</strong> 时 计算机会认为这是在进行整数的运算 所以会将小数部分全部忽略 再将int的0赋值给float类型a<br>所以结果并不为0.33333</p>
+<p>总结: <strong>表达式的结果类型，取表达式中所有元素的最高级别（精度最高、范围最大）的数据类型</strong></p>
+<h1 id="进制换算的小方法"><a href="#进制换算的小方法" class="headerlink" title="进制换算的小方法"></a>进制换算的小方法</h1><p>说到进制换算 要先来说说一个问题</p>
+<p>把1000个苹果分到10个箱子里。分好后随便我要几个苹果，你都可以整箱整箱的搬给我</p>
+<p>这道题的解法是</p>
+<p>第一个箱子 1 个苹果<br>第二个箱子 2 个苹果<br>第三个箱子 4 个苹果<br>第四个箱子 8 个苹果<br>第五个箱子 16 个苹果<br>第六个箱子 32 个苹果<br>第七个箱子 64 个苹果<br>第八个箱子 128 个苹果<br>第九个箱子 256 个苹果<br>第十个箱子 489 个苹果</p>
+<p>这样如果我要60个苹果 那就可以把 <strong>六五四三</strong> 这四个箱子给我<br>很多人在这已经看出来了 这就是2的N次方的关系<br>为了方便理解 我在Excel做了一个表格<br><img src="https://s1.ax1x.com/2020/03/15/83sqsJ.png" alt="img"><br>本来在第十箱的位置是489 但是为了方便这里就按照2的9次方写512<br>刚刚说到 假如我们要60个苹果 需要给我 <strong>六五四三</strong> 这四个箱子<br>那么我们就在六、五、四、三这四个箱子的下面标1，其余的补0<br><img src="https://s1.ax1x.com/2020/03/15/83sbM4.png" alt="img"><br>111100就是是啥呢？ 可以用计算器查看一下<br><img src="https://s1.ax1x.com/2020/03/15/83sTRU.png" alt="img"><br>可以看到<strong>111100</strong>的十进制就是<strong>60</strong></p>
+<p>那么如何将2进制快速转换成10进制呢？<br>首先我们需要考虑一个问题 我们为什么在看到一个数 比如123就知道他是一百二十三呢？<br>因为我们小时候是这样学的:<br>在看到123的时候 我们的大脑就自动把他分成</p>
+<p>  1   2    3<br><strong>百位</strong> <strong>十位</strong> <strong>个位</strong></p>
+<p>百位上有一个1 那就等于1X100<br>十位上有一个2 那就等于2X10<br>个位上有一个3 那就等于3X1</p>
+<p>如果用次方来表示的话就是<br>123 = 1X102+2X101+3X100<br>理解了上面的之后 二进制就更简单了<br>比如101101转换成10进制<br>101101 = 1X25+0X24+1X23+1X22+0X21+1X20 = 32+0+8+4+0+1 = 45<br>同样使用计算器验证一下<br><img src="https://s1.ax1x.com/2020/03/15/83hEPs.png" alt="img"></p>
+<h2 id="10进制转2进制"><a href="#10进制转2进制" class="headerlink" title="10进制转2进制"></a>10进制转2进制</h2><p>除2取余<br>如58转2进制<br><img src="https://s1.ax1x.com/2020/07/03/NXu78O.png" alt="img"><br>最后的7的二进制为111**(不记得的话也可以继续除下去)** 将余数从下往上写010<br>得到结果111010</p>
+<h1 id="补码"><a href="#补码" class="headerlink" title="补码"></a>补码</h1><p>补码规定，最高有效位是符号位，用于表达数值的符号，正数为0，负数为1<br>负数其他位求补后存放</p>
+<h2 id="补码有啥用？"><a href="#补码有啥用？" class="headerlink" title="补码有啥用？"></a>补码有啥用？</h2><p>因为计算机只能进行加法运算，那么要进行减法的时候应该如何运算呢？答案就是使用补码。<br>以下位Byte减法运算例子<br>计算A-B<br>首先b求补集<br>B + ~B = 0xff<br>B + ~B +1 = 0x100<br>~B +1 = 0x100 - B<br>0x100-B得到B的补集<br>相当于<br>A+(0X100-B) - 0x100<br>A + ~B + 1- 0x100<br>故<br>A-B = A + ~B+1 进位丢失<br>A-B等价于A+neg(B),其进位丢失<br>neg(B)就是对B求补<br>A&gt;0 neg(A) &lt;0<br>A&lt;0 neg(A) &gt;0<br>A=0 neg(A) =0</p>
+<h3 id="十进制减法例子"><a href="#十进制减法例子" class="headerlink" title="十进制减法例子"></a>十进制减法例子</h3><p>75-57<br>75+(100-57)进位丢失<br>得<br>75+43=(1)18<br>75-57=18</p>
+<h2 id="单字节补码"><a href="#单字节补码" class="headerlink" title="单字节补码"></a>单字节补码</h2><h3 id="正数"><a href="#正数" class="headerlink" title="正数"></a>正数</h3><p>用上面58为例子 58的二进制为111010<br>首先添加一个符号位，58为正数，加0变成<br>0111010<br>因为是单字节补码，一个字节为8位，0111010只有7位，还要再多补一个0<br>得到00111010<br>0011 1010<br>  3  A</p>
+<p>得到58的补码为0x3A</p>
+<h3 id="负数"><a href="#负数" class="headerlink" title="负数"></a>负数</h3><p>负数取反加1<br>用-58为例子，58的补码为0011 1010<br>0011 1010取反得1100 0101<br>1100 0101加1<br>结果<br>1100 0110<br>  C  6</p>
+<p>得到58的补码为0xC6</p>
+<h2 id="单字节补码求10进制真值"><a href="#单字节补码求10进制真值" class="headerlink" title="单字节补码求10进制真值"></a>单字节补码求10进制真值</h2><p>0x58<br>01011000<br>+1011000<br>64+16+8 = 88</p>
+<p>0x85 （16进制表达中最高有效位大于等于8的，都是负数）<br>10000101<br>-1111011<br>1+2+8+16+32+64=123<br>-123</p>
+<p>0x80<br>10000000<br>-1111111+1=-0 or -128</p>
+<h1 id="程序真的是从main函数开始的吗？"><a href="#程序真的是从main函数开始的吗？" class="headerlink" title="程序真的是从main函数开始的吗？"></a>程序真的是从main函数开始的吗？</h1><p>在一些编辑器生成C语言框架的时候，往往可以看到在main函数后面跟着两个参数。<br><img src="https://s1.ax1x.com/2020/07/11/UlKxGF.png" alt="img"></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[])</span><br></pre></td></tr></table></figure>
+<p>其实main的参数有三个，完整的应该是这样：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">int</span> argc, <span class="keyword">char</span> <span class="keyword">const</span> *argv[],<span class="keyword">char</span> *envp[])</span><br></pre></td></tr></table></figure>
+<p>如果main是一个程序的开始，那么谁来给main传参呢？<br>你如果安装了完整的VS系列，那么你就可以找到对应的源码，路径如下：<br>C:\Program Files\Microsoft Visual Studio\VC98\CRT\SRC\CRT0.C<br>打开CRT0.C可以看到mainCRTStartup()这个函数<br><img src="https://s1.ax1x.com/2020/07/05/USXrGR.png" alt="img"><br>CRT为C Run Time的缩写<br>那么我们大致来看一下这个函数做了什么<br>首先通过位运算获取了当前系统的版本，再通过位运算获取当前操作系统的主版本号，次版本号。<br><img src="https://s1.ax1x.com/2020/07/05/USOQ91.png" alt="img"><br>初始化堆环境，以及判断程序是否为多线程，如果是，则初始化多线程。<br><img src="https://s1.ax1x.com/2020/07/05/USXjoQ.png" alt="img"><br>初始化IO(stdin , stdout , stderr)<br><img src="https://s1.ax1x.com/2020/07/05/USjCQ0.png" alt="img"><br>紧接着的是一个条件编译，进行取得命令行和环境变量和将空格分开的命令行语句于环境变量格式化为字符型指针数组。<br><img src="https://s1.ax1x.com/2020/07/05/USjQOK.png" alt="img"><br>初始化处理器中的浮点寄存器，官方的全局对象，用户(程序员)自定义的全局对象。<br><img src="https://s1.ax1x.com/2020/07/05/USj7tJ.png" alt="img"><br>获取当前程序的启动状态，信息，比如是否为窗口，窗口多大，字体多大等等。<br><img src="https://s1.ax1x.com/2020/07/05/USvGuV.png" alt="img"><br>条件编译，根据是否为Unicode(宽字节字符集)版，是否为窗口，进行选择，共有四个版本，选其中一个。<br><img src="https://s1.ax1x.com/2020/07/05/USzCQI.png" alt="img"><br>可以看到此时到达main函数，并将三个参数传入main函数内，接下来流程才转到main函数。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">main(__argc, __argv, _environ);</span><br></pre></td></tr></table></figure>
+<h1 id="指针1"><a href="#指针1" class="headerlink" title="指针1"></a>指针1</h1><h2 id="1-啥是指针"><a href="#1-啥是指针" class="headerlink" title="1.啥是指针?"></a><strong>1.啥是指针</strong>?</h2><p><strong>指针</strong> 就是一个具有解释方式的地址</p>
+<h2 id="2-指针的声明"><a href="#2-指针的声明" class="headerlink" title="2.指针的声明"></a><strong>2.指针的声明</strong></h2><p>解释方式 身份标识 用户标识符</p>
+<p>简单来说就是 <strong>类型 * 名字</strong></p>
+<p>如：</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9i2TJ.png" alt="img"></p>
+<p>*号放左中右都没有关系，看个人喜好或是需要遵从的代码规范。</p>
+<p><strong>注意！声明指针时必须初始化或赋初值，否则会出现野指针！</strong></p>
+<p>另一种情况：</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9igw4.png" alt="img"><br>这行代码的意思是 声明一个<strong>int</strong>类型的指针和一个<strong>int</strong>类型的变量</p>
+<p>如果写成这样：</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9icmF.png" alt="img"></p>
+<p>可能就有初学者会认为这是声明<strong>两个</strong>指针，其实并不是。</p>
+<h2 id="3-指针的四种运算方式"><a href="#3-指针的四种运算方式" class="headerlink" title="3.指针的四种运算方式"></a><strong>3.指针的四种运算方式</strong></h2><h3 id="3-1-间接运算"><a href="#3-1-间接运算" class="headerlink" title="3.1 间接运算"></a><strong>3.1 间接运算</strong></h3><p>使用间接运算符(*)</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FHg0.png" alt="img"></p>
+<p>上面四行代码的意思:</p>
+<p>1.定义了一个<strong>int</strong>类型的变量<strong>n</strong>并赋值为<strong>6</strong></p>
+<p>2.定义一个<strong>int</strong>类型的指针<strong>p</strong>并赋值为空(<strong>NULL</strong>)</p>
+<p>3.将变量<strong>n</strong>的地址取出并赋给指针<strong>p</strong></p>
+<p>4.使用指针<strong>p</strong>定义的类型去间接访问指针<strong>p</strong>内保存的地址（变量n）的内容，得到变量n的内容并赋值给printf进行输出。</p>
+<p>第四句话有点绕，没事，看对应的汇编代码就一目了然</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FXbF.png" alt="img"></p>
+<h3 id="3-2-下标运算"><a href="#3-2-下标运算" class="headerlink" title="3.2 下标运算"></a><strong>3.2 下标运算</strong></h3><p><img src="https://s1.ax1x.com/2020/08/13/d9FbvV.png" alt="img"></p>
+<p>可以看到，在汇编上这两行代码的是完全等价的。</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FLuT.png" alt="img"></p>
+<p>指针访问数组元素</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FODU.png" alt="img"></p>
+<h3 id="3-3-加法运算"><a href="#3-3-加法运算" class="headerlink" title="3.3 加法运算"></a><strong>3.3 加法运算</strong></h3><p>对指针做加法运算，必须是<strong>整数类型</strong>，得到的是同类型的指针<strong>常量</strong></p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9F63t.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FvE4.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9k981.png" alt="img"><br>可以看到，再执行完毕**printf(“%x\n”, (p[n])++);**这行语句后55被改成了56</p>
+<h3 id="3-4-减法运算"><a href="#3-4-减法运算" class="headerlink" title="3.4 减法运算"></a><strong>3.4 减法运算</strong></h3><p>同类型指针才能相减，得到整形常量</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9Fy9I.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FWDS.png" alt="img"></p>
+<p>就两个地址相减再除指针类型的大小 没啥好说的</p>
+<h2 id="4-const修饰指针"><a href="#4-const修饰指针" class="headerlink" title="4.const修饰指针"></a><strong>4.const修饰指针</strong></h2><p>下面一幅图这是正常修改<strong>ary</strong>内容的情况</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FxUJ.png" alt="img"></p>
+<p>如果在*左边加上<strong>const</strong>，将会报错”不能给常量赋值”</p>
+<p>下面是const写在*左边的两种情况</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9Fz59.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FcgP.png" alt="img"></p>
+<p><strong>cunst</strong>在*****左边，间接访问的目标是常量，所以会报错”不能给常量赋值”</p>
+<p>如果<strong>const</strong>在*****右边，则可以正常编译通过。</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9kpCR.png" alt="img"></p>
+<p><strong>cunst</strong>在*<strong><em>\</em>左边，指针自己是常量，不影响对</strong>ary**的赋值。</p>
+<h2 id="5-指针-的一些坑"><a href="#5-指针-的一些坑" class="headerlink" title="5.指针++的一些坑"></a><strong>5.指针++的一些坑</strong></h2><h3 id="5-1-p"><a href="#5-1-p" class="headerlink" title="5.1 *p++"></a><strong>5.1 *p++</strong></h3><p>这种情况++与指针p先结合，得到同类型指针，由于后置++，表达式完成后才加1</p>
+<p>demo:</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FRu8.png" alt="img"></p>
+<p>可以看到在执行*<strong>p++\</strong>之前指针指向的地址是ary数组的首地址<strong>0x006ffae8</strong></p>
+<p>接下来执行语句</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FfHg.png" alt="img"><br>可以看到，正常输出了ary[0]的内容，在输出执行完毕后，<strong>0x006ffae8</strong>变成了<strong>0x006ffaec</strong></p>
+<p>你们或许在这会有疑问，为啥<strong>0x006ffae8</strong>进行++之后会变成<strong>0x006ffaec</strong>而不是<strong>0x006ffae9</strong>呢？</p>
+<p>因为这里进行的是int类型指针的+1，int是4字节，所以是加4。</p>
+<p>还可以这样写，没有区别，只是让代码的可读性更高了一些，原本的运算符优先级就是这样的。</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9Fgjf.png" alt="img"></p>
+<h3 id="5-2-p"><a href="#5-2-p" class="headerlink" title="5.2 (*p)++"></a><strong>5.2 (*p)++</strong></h3><p>*与指针p先结合，得到整形，再对整形自加1</p>
+<p>执行前:</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9F5Nj.png" alt="img"></p>
+<p>执行后：</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9F73q.png" alt="img"></p>
+<p>这个需要注意的是，*<em>(\</em>p)++*<em>执行之后的结果是常量，不能进行赋值，而上面的**</em>p++**运算结果是整形，可以进行赋值。</p>
+<h2 id="6-字符串指针"><a href="#6-字符串指针" class="headerlink" title="6.字符串指针"></a><strong>6.字符串指针</strong></h2><p>在VC6.0中 字符串指针可以这样定义</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9F4EQ.png" alt="img"></p>
+<p>其实指针字符串是放在常量区的，和定义全局变量一样。</p>
+<p>这个问题在高版本IDE中已经有提示</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FTCn.png" alt="img"></p>
+<p>必须要加<strong>const</strong>声明字符串指针</p>
+<p><img src="https://s1.ax1x.com/2020/08/13/d9FI4s.png" alt="img"></p>
+<h1 id="指针2"><a href="#指针2" class="headerlink" title="指针2"></a>指针2</h1><h2 id="1-指针函数"><a href="#1-指针函数" class="headerlink" title="1.指针函数"></a><strong>1.指针函数</strong></h2><p><strong>指针函数</strong>就是返回值为指针的函数</p>
+<p><strong>注意：指针函数在使用时不应该返回参数和局部变量的地址，当函数调用完成后参数和函数局部变量的地址会被释放，这时返回的指针会引用一个栈外的地址，这个地址会被新函数占用并覆盖。</strong></p>
+<p>返回参数地址demo:</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPt2EF.png" alt="img"></p>
+<p>这是一个比较两个数大小的简单指针函数*<strong>GetMax</strong>，*<strong>GetMax</strong>函数返回值返回的是参数中数值最大的参数的地址。</p>
+<p>这样写编译器只会视为警告，并不会视为错误，是可以正常编译甚至运行的。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtcHU.png" alt="img"></p>
+<p>这段代码直接运行是可以正常输出较大值<strong>9</strong>的。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtRN4.png" alt="img"></p>
+<p>但是如果在输出之前让别的函数对栈空间进行了使用之后，原本的残留值被覆盖，输出值就会错误，这里我多加一句printf在上面。就可以看到错误的输出。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtW4J.png" alt="img"></p>
+<p>返回局部变量地址demo:</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPthC9.png" alt="img"></p>
+<p>同样也是输出错误。</p>
+<h2 id="2-函数指针（回调函数）"><a href="#2-函数指针（回调函数）" class="headerlink" title="2.函数指针（回调函数）"></a><strong>2.函数指针（回调函数）</strong></h2><h3 id="2-1-定义语法"><a href="#2-1-定义语法" class="headerlink" title="2.1 定义语法"></a><strong>2.1 定义语法</strong></h3><p>返回值 (调用约定*函数指针名)(各形参的类型序列)</p>
+<p><strong>什么？看不懂？说人话？</strong></p>
+<p>看图！</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPt43R.png" alt="img"></p>
+<p>这样就定义了一个名为<strong>pfnFun</strong>的函数指针，并指向<strong>fun</strong>函数的首地址。</p>
+<p>为了代码美观，还可以使用<strong>typedef</strong>来定义。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPt5g1.png" alt="img"></p>
+<p>微软在定义函数指针时就是使用了<strong>typedef</strong>。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtjCd.png" alt="img"></p>
+<h3 id="2-2-使用"><a href="#2-2-使用" class="headerlink" title="2.2 使用"></a><strong>2.2 使用</strong></h3><p>函数指针使用时必须同参数个数、同参数类型顺序、同返回值，同调用约定。</p>
+<p>符合上面要求的 才是同类型函数指针。</p>
+<p>使用时直接函数指针名(参数)就行</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtIjx.png" alt="img"></p>
+<h3 id="2-3-有什么用？设计思路？"><a href="#2-3-有什么用？设计思路？" class="headerlink" title="2.3 有什么用？设计思路？"></a><strong>2.3 有什么用？设计思路？</strong></h3><p>函数指针可以在程序运行时修改程序行为，函数指针的赋值可以从文件、注册表、网络数据包等方式赋值。</p>
+<p>指针函数常用于接口设计，如程序更新(热更新、热补丁)，木马免杀。通过数据包发送的内容是通常不落地的，只存在于内存之中，进程结束就消失。</p>
+<h2 id="3-指针数组-变长字符串数组"><a href="#3-指针数组-变长字符串数组" class="headerlink" title="3.指针数组(变长字符串数组)"></a><strong>3.指针数组(变长字符串数组)</strong></h2><p>指针数组是特殊的数组，指针数组里面的每个元素都是指针类型。</p>
+<h3 id="3-1-定义方式"><a href="#3-1-定义方式" class="headerlink" title="3.1 定义方式"></a><strong>3.1 定义方式</strong></h3><p><img src="https://s1.ax1x.com/2020/08/14/dPtTu6.png" alt="img"></p>
+<h3 id="3-2-啥是变长字符数组？和定长字符串数组又有什么区别？"><a href="#3-2-啥是变长字符数组？和定长字符串数组又有什么区别？" class="headerlink" title="3.2 啥是变长字符数组？和定长字符串数组又有什么区别？"></a><strong>3.2 啥是变长字符数组？和定长字符串数组又有什么区别？</strong></h3><p>首先来看看定长数组的内存结构</p>
+<p>这里我定义了一个每个元素大小为<strong>32</strong>字节定长数组，进入调试模式，查看内存结构。</p>
+<p>可以看到，无论字符串有多少个字节，都会分配<strong>32</strong>个字节给每个元素。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtHHO.png" alt="img"></p>
+<p>定长数组的优势是访问效率高。</p>
+<p>而变长数组则是一个紧挨着一个存放</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPt7DK.png" alt="img"></p>
+<p>这样的优点就是可以节省空间，但是访问效率会变低。</p>
+<p>实际上变长数组为了解决访问效率问题，使用了字符指针数组的方式，每个元素的首地址都放到一个数组里，指针的长度是固定的，在访问第n个元素的时候，依然可以用数组的寻址方式。（类似于switch的访问方式）</p>
+<h3 id="3-3指针数组的下标运算与指针运算"><a href="#3-3指针数组的下标运算与指针运算" class="headerlink" title="3.3指针数组的下标运算与指针运算"></a><strong>3.3指针数组的下标运算与指针运算</strong></h3><p>指针数组的下标访问可以总结为以下三句话，与对应的情况套用进去就行。</p>
+<p><strong>[数组名] 是 [数组第0个元素] 类型的指针常量</strong></p>
+<p><strong>[二维数组] 的元素是 [一维数组]</strong></p>
+<p><strong>对 [某类型指针] 做 * 运算，得到 [某类型\</strong>]** 的标识符引用**</p>
+<p>首先先定义一个二维数组<strong>ary</strong>，本小节的后续部分将会使用此数组作为例子。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtLUe.png" alt="img"></p>
+<h4 id="3-3-1-直接访问ary"><a href="#3-3-1-直接访问ary" class="headerlink" title="3.3.1 直接访问ary"></a><strong>3.3.1 直接访问ary</strong></h4><p>输出的是第0个一维数组的首地址，也是<strong>ary</strong>的首地址。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtqED.png" alt="img"></p>
+<h4 id="3-3-2-ary-0"><a href="#3-3-2-ary-0" class="headerlink" title="3.3.2 ary[0]"></a><strong>3.3.2 ary[0]</strong></h4><p><img src="https://s1.ax1x.com/2020/08/14/dPtv8A.png" alt="img"></p>
+<p>其实<strong>ary[0]\</strong>的输出结果和上面直接访问<strong>ary</strong>输出的一样，只不过我这开启了<strong>ASLR</strong>(地址随机化)所以输出不一样。</p>
+<p>这里看似输出一样，但是其实访问的地方和类型并不一样，这个在<strong>IDE</strong>调试器的监视窗口可以看出来。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtO4H.png" alt="img"></p>
+<h4 id="3-3-3-ary-0-0"><a href="#3-3-3-ary-0-0" class="headerlink" title="3.3.3 ary[0][0]"></a><strong>3.3.3 ary[0][0]</strong></h4><p>对应:</p>
+<p><strong>对 [某类型指针] 做 * 运算，得到 [某类型\</strong>]** 的标识符引用**</p>
+<p><img src="https://s1.ax1x.com/2020/08/15/difkS1.png" alt="img"></p>
+<h4 id="3-3-4-ary-1"><a href="#3-3-4-ary-1" class="headerlink" title="3.3.4 ary+1"></a><strong>3.3.4 ary+1</strong></h4><p>这个和我在上一篇文章中提到的指针加法原理一样，套进去就行。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtxgI.png" alt="img"></p>
+<p>在这里<strong>ary</strong>的地址为</p>
+<p><img src="https://s1.ax1x.com/2020/08/15/difYm8.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtzvt.png" alt="img"></p>
+<h4 id="3-3-5-ary-1"><a href="#3-3-5-ary-1" class="headerlink" title="3.3.5 *ary+1"></a><strong>3.3.5 *ary+1</strong></h4><p>这在这里<strong>ary</strong>的地址为</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtaNQ.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPNpKP.png" alt="img"></p>
+<h4 id="3-3-6-ary-1"><a href="#3-3-6-ary-1" class="headerlink" title="3.3.6 **ary+1"></a>3.3.6 **ary+1</h4><p><img src="https://s1.ax1x.com/2020/08/14/dPt09s.png" alt="img"></p>
+<h2 id="4-数组指针"><a href="#4-数组指针" class="headerlink" title="4.数组指针"></a><strong>4.数组指针</strong></h2><h3 id="4-1-数组指针的定义"><a href="#4-1-数组指针的定义" class="headerlink" title="4.1 数组指针的定义"></a><strong>4.1 数组指针的定义</strong></h3><p>一维数组的数组指针定义:</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtUAg.png" alt="img"></p>
+<p>二维数组的数组指针定义：</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtYB8.png" alt="img"><br><strong>注意！对数组取地址得到的是数组的地址，而不是数组元素的地址。指针p将会把目标解释为数组，而不是把目标解释为整形指针。</strong></p>
+<p>如果你看懂了上面的内容，那么你一定对指针数组的基本原理有了一定的了解，就让我们来看一下下面这些简单的例子，把我们刚刚学到的内容用到实践中去吧！（狗头保命）</p>
+<p><img src="https://s1.ax1x.com/2020/08/15/difAQx.png" alt="img"></p>
+<h3 id="4-2-试试看！数组指针的各种运算！"><a href="#4-2-试试看！数组指针的各种运算！" class="headerlink" title="4.2 试试看！数组指针的各种运算！"></a><strong>4.2 试试看！数组指针的各种运算！</strong></h3><p>以下例子将使用数组指针<strong>p</strong>和二维数组<strong>ary</strong>作为例子。</p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPttHS.png" alt="img"></p>
+<h4 id="4-2-1-直接访问数组指针p"><a href="#4-2-1-直接访问数组指针p" class="headerlink" title="4.2.1 直接访问数组指针p"></a><strong>4.2.1 直接访问数组指针p</strong></h4><p>得到<strong>int[4]\</strong>l类型数组指针地址<strong>0x0019febc</strong></p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtdhj.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtB3n.png" alt="img"></p>
+<h4 id="4-2-2-p"><a href="#4-2-2-p" class="headerlink" title="4.2.2 *p"></a><strong>4.2.2 *p</strong></h4><p>得到<strong>int[4]\</strong>数组地址<strong>0x0019febc</strong></p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtDcq.png" alt="img"></p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtrj0.png" alt="img"></p>
+<h4 id="4-2-3-p"><a href="#4-2-3-p" class="headerlink" title="4.2.3 **p"></a>4.2.3 **p</h4><p>对<strong>0x0019febc</strong>取内容得到整数<strong>10</strong></p>
+<p><img src="https://s1.ax1x.com/2020/08/14/dPtyuV.png" alt="img"></p>
+<h4 id="4-2-4-p-1"><a href="#4-2-4-p-1" class="headerlink" title="4.2.4 p+1"></a><strong>4.2.4 p+1</strong></h4><p><img src="https://s1.ax1x.com/2020/08/15/difCFJ.png" alt="img"></p>
+<h4 id="4-2-5-p-1"><a href="#4-2-5-p-1" class="headerlink" title="4.2.5 *p+1"></a><strong>4.2.5 *p+1</strong></h4><p><img src="https://s1.ax1x.com/2020/08/14/dPt6BT.png" alt="img"></p>
+<h4 id="4-2-6-p-1"><a href="#4-2-6-p-1" class="headerlink" title="4.2.6 *(p+1)"></a><strong>4.2.6 *(p+1)</strong></h4><p><strong>(p+1)\</strong>得到<strong>int[4]**类型的指针常量</strong>0x0019fecc**</p>
+<p><strong><em>(p+1)*</em>取到的是</strong>int**类型的指针常量</p>
+<p><img src="https://s1.ax1x.com/2020/08/15/difSwF.png" alt="img"></p>
+<h4 id="4-2-7-p-1"><a href="#4-2-7-p-1" class="headerlink" title="4.2.7 *(*p+1)"></a><strong>4.2.7 *(*p+1)</strong></h4><p><img src="https://s1.ax1x.com/2020/08/15/difpo4.png" alt="img"></p>
+<h4 id="4-2-8-p-1-1"><a href="#4-2-8-p-1-1" class="headerlink" title="4.2.8 *(p+1)+1"></a><strong>4.2.8 *(p+1)+1</strong></h4><p><img src="https://s1.ax1x.com/2020/08/15/difPY9.png" alt="img"></p>
+<h4 id="4-2-9-p-1-1"><a href="#4-2-9-p-1-1" class="headerlink" title="4.2.9 *(*p+1)+1"></a><strong>4.2.9 *(*p+1)+1</strong></h4><p><img src="https://s1.ax1x.com/2020/08/15/diWzeU.png" alt="img"></p>
+<h4 id="4-2-10-p-1-1-1"><a href="#4-2-10-p-1-1-1" class="headerlink" title="4.2.10 (p[1]+1)[1]"></a><strong>4.2.10 (p[1]+1)[1]</strong></h4><p><img src="https://s1.ax1x.com/2020/08/15/difiWR.png" alt="img"></p>
+<h2 id="5-二级指针"><a href="#5-二级指针" class="headerlink" title="5.二级指针"></a>5.二级指针</h2></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ZDDR</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zddr.net/2020/02/29/C%E8%AF%AD%E8%A8%80%E5%B0%8F%E8%AE%B0/">https://zddr.net/2020/02/29/C语言小记/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zddr.net" target="_blank">ZDDR's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://s1.ax1x.com/2020/03/12/8mmKE9.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/02/29/Windows%E7%BC%96%E7%A8%8B%E5%B0%8F%E8%AE%B0/"><img class="prev-cover" src="https://s2.ax1x.com/2020/01/03/lNWQhD.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Windows编程小记</div></div></a></div><div class="next-post pull-right"><a href="/2020/02/27/DirectX%20SDK%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><img class="next-cover" src="https://s2.ax1x.com/2020/02/27/3a5gYj.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DirectX SDK学习笔记</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#C%E8%AF%AD%E8%A8%80%E5%BC%BA%E5%88%B6%E8%BD%AC%E6%8D%A2%E7%9A%84%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E5%9D%91"><span class="toc-number">1.</span> <span class="toc-text">C语言强制转换的的一个小坑</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%9B%E5%88%B6%E6%8D%A2%E7%AE%97%E7%9A%84%E5%B0%8F%E6%96%B9%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">进制换算的小方法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#10%E8%BF%9B%E5%88%B6%E8%BD%AC2%E8%BF%9B%E5%88%B6"><span class="toc-number">2.1.</span> <span class="toc-text">10进制转2进制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A1%A5%E7%A0%81"><span class="toc-number">3.</span> <span class="toc-text">补码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E7%A0%81%E6%9C%89%E5%95%A5%E7%94%A8%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">补码有啥用？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E8%BF%9B%E5%88%B6%E5%87%8F%E6%B3%95%E4%BE%8B%E5%AD%90"><span class="toc-number">3.1.1.</span> <span class="toc-text">十进制减法例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E5%AD%97%E8%8A%82%E8%A1%A5%E7%A0%81"><span class="toc-number">3.2.</span> <span class="toc-text">单字节补码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A3%E6%95%B0"><span class="toc-number">3.2.1.</span> <span class="toc-text">正数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9F%E6%95%B0"><span class="toc-number">3.2.2.</span> <span class="toc-text">负数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E5%AD%97%E8%8A%82%E8%A1%A5%E7%A0%81%E6%B1%8210%E8%BF%9B%E5%88%B6%E7%9C%9F%E5%80%BC"><span class="toc-number">3.3.</span> <span class="toc-text">单字节补码求10进制真值</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E7%9C%9F%E7%9A%84%E6%98%AF%E4%BB%8Emain%E5%87%BD%E6%95%B0%E5%BC%80%E5%A7%8B%E7%9A%84%E5%90%97%EF%BC%9F"><span class="toc-number">4.</span> <span class="toc-text">程序真的是从main函数开始的吗？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%87%E9%92%881"><span class="toc-number">5.</span> <span class="toc-text">指针1</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%95%A5%E6%98%AF%E6%8C%87%E9%92%88"><span class="toc-number">5.1.</span> <span class="toc-text">1.啥是指针?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%8C%87%E9%92%88%E7%9A%84%E5%A3%B0%E6%98%8E"><span class="toc-number">5.2.</span> <span class="toc-text">2.指针的声明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%8C%87%E9%92%88%E7%9A%84%E5%9B%9B%E7%A7%8D%E8%BF%90%E7%AE%97%E6%96%B9%E5%BC%8F"><span class="toc-number">5.3.</span> <span class="toc-text">3.指针的四种运算方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%97%B4%E6%8E%A5%E8%BF%90%E7%AE%97"><span class="toc-number">5.3.1.</span> <span class="toc-text">3.1 间接运算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%B8%8B%E6%A0%87%E8%BF%90%E7%AE%97"><span class="toc-number">5.3.2.</span> <span class="toc-text">3.2 下标运算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%8A%A0%E6%B3%95%E8%BF%90%E7%AE%97"><span class="toc-number">5.3.3.</span> <span class="toc-text">3.3 加法运算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%87%8F%E6%B3%95%E8%BF%90%E7%AE%97"><span class="toc-number">5.3.4.</span> <span class="toc-text">3.4 减法运算</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-const%E4%BF%AE%E9%A5%B0%E6%8C%87%E9%92%88"><span class="toc-number">5.4.</span> <span class="toc-text">4.const修饰指针</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%8C%87%E9%92%88-%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9D%91"><span class="toc-number">5.5.</span> <span class="toc-text">5.指针++的一些坑</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-p"><span class="toc-number">5.5.1.</span> <span class="toc-text">5.1 *p++</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-p"><span class="toc-number">5.5.2.</span> <span class="toc-text">5.2 (*p)++</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8C%87%E9%92%88"><span class="toc-number">5.6.</span> <span class="toc-text">6.字符串指针</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%87%E9%92%882"><span class="toc-number">6.</span> <span class="toc-text">指针2</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%8C%87%E9%92%88%E5%87%BD%E6%95%B0"><span class="toc-number">6.1.</span> <span class="toc-text">1.指针函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%EF%BC%88%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">2.函数指针（回调函数）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%AE%9A%E4%B9%89%E8%AF%AD%E6%B3%95"><span class="toc-number">6.2.1.</span> <span class="toc-text">2.1 定义语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%BD%BF%E7%94%A8"><span class="toc-number">6.2.2.</span> <span class="toc-text">2.2 使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%EF%BC%9F%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF%EF%BC%9F"><span class="toc-number">6.2.3.</span> <span class="toc-text">2.3 有什么用？设计思路？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84-%E5%8F%98%E9%95%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%95%B0%E7%BB%84"><span class="toc-number">6.3.</span> <span class="toc-text">3.指针数组(变长字符串数组)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%AE%9A%E4%B9%89%E6%96%B9%E5%BC%8F"><span class="toc-number">6.3.1.</span> <span class="toc-text">3.1 定义方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%95%A5%E6%98%AF%E5%8F%98%E9%95%BF%E5%AD%97%E7%AC%A6%E6%95%B0%E7%BB%84%EF%BC%9F%E5%92%8C%E5%AE%9A%E9%95%BF%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%95%B0%E7%BB%84%E5%8F%88%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-number">6.3.2.</span> <span class="toc-text">3.2 啥是变长字符数组？和定长字符串数组又有什么区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%8B%E6%A0%87%E8%BF%90%E7%AE%97%E4%B8%8E%E6%8C%87%E9%92%88%E8%BF%90%E7%AE%97"><span class="toc-number">6.3.3.</span> <span class="toc-text">3.3指针数组的下标运算与指针运算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E7%9B%B4%E6%8E%A5%E8%AE%BF%E9%97%AEary"><span class="toc-number">6.3.3.1.</span> <span class="toc-text">3.3.1 直接访问ary</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-ary-0"><span class="toc-number">6.3.3.2.</span> <span class="toc-text">3.3.2 ary[0]</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-ary-0-0"><span class="toc-number">6.3.3.3.</span> <span class="toc-text">3.3.3 ary[0][0]</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-ary-1"><span class="toc-number">6.3.3.4.</span> <span class="toc-text">3.3.4 ary+1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-5-ary-1"><span class="toc-number">6.3.3.5.</span> <span class="toc-text">3.3.5 *ary+1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-6-ary-1"><span class="toc-number">6.3.3.6.</span> <span class="toc-text">3.3.6 **ary+1</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%95%B0%E7%BB%84%E6%8C%87%E9%92%88"><span class="toc-number">6.4.</span> <span class="toc-text">4.数组指针</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%95%B0%E7%BB%84%E6%8C%87%E9%92%88%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">6.4.1.</span> <span class="toc-text">4.1 数组指针的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E8%AF%95%E8%AF%95%E7%9C%8B%EF%BC%81%E6%95%B0%E7%BB%84%E6%8C%87%E9%92%88%E7%9A%84%E5%90%84%E7%A7%8D%E8%BF%90%E7%AE%97%EF%BC%81"><span class="toc-number">6.4.2.</span> <span class="toc-text">4.2 试试看！数组指针的各种运算！</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-%E7%9B%B4%E6%8E%A5%E8%AE%BF%E9%97%AE%E6%95%B0%E7%BB%84%E6%8C%87%E9%92%88p"><span class="toc-number">6.4.2.1.</span> <span class="toc-text">4.2.1 直接访问数组指针p</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2-p"><span class="toc-number">6.4.2.2.</span> <span class="toc-text">4.2.2 *p</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-3-p"><span class="toc-number">6.4.2.3.</span> <span class="toc-text">4.2.3 **p</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-4-p-1"><span class="toc-number">6.4.2.4.</span> <span class="toc-text">4.2.4 p+1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-5-p-1"><span class="toc-number">6.4.2.5.</span> <span class="toc-text">4.2.5 *p+1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-6-p-1"><span class="toc-number">6.4.2.6.</span> <span class="toc-text">4.2.6 *(p+1)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-7-p-1"><span class="toc-number">6.4.2.7.</span> <span class="toc-text">4.2.7 *(*p+1)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-8-p-1-1"><span class="toc-number">6.4.2.8.</span> <span class="toc-text">4.2.8 *(p+1)+1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-9-p-1-1"><span class="toc-number">6.4.2.9.</span> <span class="toc-text">4.2.9 *(*p+1)+1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-10-p-1-1-1"><span class="toc-number">6.4.2.10.</span> <span class="toc-text">4.2.10 (p[1]+1)[1]</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%BA%8C%E7%BA%A7%E6%8C%87%E9%92%88"><span class="toc-number">6.5.</span> <span class="toc-text">5.二级指针</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer" style="background-image: url(https://s2.ax1x.com/2020/01/03/lNWQhD.jpg)"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2021 By ZDDR</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>

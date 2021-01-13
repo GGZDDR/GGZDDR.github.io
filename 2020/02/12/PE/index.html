@@ -1,0 +1,207 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PE | ZDDR's blog</title><meta name="keywords" content="ZDDR,逆向,内核,Pwn"><meta name="author" content="ZDDR"><meta name="copyright" content="ZDDR"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="什么是PE？可执行文件格式：Windows平台：PE(Portable Executable可移植可执行)文件结构Linux平台：ELF(Executable and Linking Format可执行和链接格式)文件结构 什么是可执行文件？一个进程，在操作系统上运行之前，记录着即将要运行的代码，以及各种相关数据的文件，按照某种约定存储在磁盘上。这种约定就是可执行文件的格式。这个格式要记录一个进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PE">
+<meta property="og:url" content="https://zddr.net/2020/02/12/PE/index.html">
+<meta property="og:site_name" content="ZDDR&#39;s blog">
+<meta property="og:description" content="什么是PE？可执行文件格式：Windows平台：PE(Portable Executable可移植可执行)文件结构Linux平台：ELF(Executable and Linking Format可执行和链接格式)文件结构 什么是可执行文件？一个进程，在操作系统上运行之前，记录着即将要运行的代码，以及各种相关数据的文件，按照某种约定存储在磁盘上。这种约定就是可执行文件的格式。这个格式要记录一个进程">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.ax1x.com/2020/02/11/1okrSx.png">
+<meta property="article:published_time" content="2020-02-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-11-19T16:00:00.000Z">
+<meta property="article:author" content="ZDDR">
+<meta property="article:tag" content="ZDDR,逆向,内核,Pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.ax1x.com/2020/02/11/1okrSx.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zddr.net/2020/02/12/PE/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ZDDR","link":"链接: ","source":"来源: ZDDR's blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-11-20 00:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://gitee.com/ZDDR/blog_img/raw/master/img/index_img/%E8%87%AA%E5%B7%B1%E7%9A%84%E5%A4%B4%E5%83%8F.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">18</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s2.ax1x.com/2020/02/11/1okrSx.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZDDR's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">PE</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-02-11T16:00:00.000Z" title="发表于 2020-02-12 00:00:00">2020-02-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-11-19T16:00:00.000Z" title="更新于 2020-11-20 00:00:00">2020-11-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Windows%E7%BC%96%E7%A8%8B/">Windows编程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="什么是PE？"><a href="#什么是PE？" class="headerlink" title="什么是PE？"></a>什么是PE？</h1><p>可执行文件格式：<br>Windows平台：<br>PE(Portable Executable可移植可执行)文件结构<br>Linux平台：<br>ELF(Executable and Linking Format可执行和链接格式)文件结构</p>
+<h1 id="什么是可执行文件？"><a href="#什么是可执行文件？" class="headerlink" title="什么是可执行文件？"></a>什么是可执行文件？</h1><p>一个进程，在操作系统上运行之前，记录着即将要运行的代码，以及各种相关数据的文件，按照某种约定存储在磁盘上。这种约定就是可执行文件的格式。这个格式要记录一个进程创建所必须的各种信息。因为他是为进程创建所服务的。</p>
+<p>操作系统要装载一个进程，要有代码、数据、堆栈描述等等，这些东西都会在可执行文件中详细记录。</p>
+<h1 id="PE大致结构-缩进描述包含关系"><a href="#PE大致结构-缩进描述包含关系" class="headerlink" title="PE大致结构(缩进描述包含关系)"></a>PE大致结构(缩进描述包含关系)</h1><ul>
+<li>IMAGE_DOS_HEADER（DOS头）</li>
+<li>IMAGE_NT_HEADERS（NT头）<ul>
+<li>IMAGE_FILE_HEADER（文件头）</li>
+<li>IMAGE_OPTIONAL_HEADER（选项头、可选头）（变体）</li>
+</ul>
+</li>
+<li>IMAGE_SECTION_HEADER（数据节区描述）（多个）</li>
+<li>SECTION_DATA（各节数据）</li>
+</ul>
+<h1 id="PE指纹"><a href="#PE指纹" class="headerlink" title="PE指纹"></a>PE指纹</h1><p>如何确定一个文件是否为PE文件呢？<br>需要用到一个<strong>十六进制编辑工具</strong>，如Ultraedit，WinHex等等<br>我在这使用的是Ultraedit<br>把一个正常的.exe后缀的文件拖入编辑工具内<br>可以看到前四个字节为<strong>4D 5A</strong> 所对应的ASCII为<strong>MZ</strong><br>这就是PE文件的第一个特征</p>
+<p><img src="https://s2.ax1x.com/2020/02/11/1Tcrrj.png" alt="img"></p>
+<p>第二个特征在<strong>3C</strong>的位置<br>可以看到在3C的位置写着一个C0</p>
+<p><img src="https://s2.ax1x.com/2020/02/11/1TcDMQ.png" alt="img"></p>
+<p>那么继续往下找C0的位置<br>这里就是PE头的起始位置</p>
+<p><img src="https://s2.ax1x.com/2020/02/11/1TcwRS.png" alt="img"></p>
+<p>如果这两个地方的特征都正确 那么基本可以确定 这个是一个PE文件</p>
+<h1 id="PE结构体"><a href="#PE结构体" class="headerlink" title="PE结构体"></a>PE结构体</h1><p><img src="https://s2.ax1x.com/2020/02/11/1TD76A.png" alt="img"></p>
+<h2 id="DOS部分"><a href="#DOS部分" class="headerlink" title="DOS部分"></a>DOS部分</h2><h3 id="DOS-MZ文件头"><a href="#DOS-MZ文件头" class="headerlink" title="DOS MZ文件头"></a>DOS MZ文件头</h3><p><img src="https://s2.ax1x.com/2020/02/12/17nqM9.png" alt="img"><br>这个这部分是一个<strong>IMAGE_DOS_HEADER</strong>结构 大小为<strong>64</strong>个字节<br>在Ultraedit的16进制编辑模式中 每一行有<strong>16</strong>个字节 那么<strong>DOS MZ文件头</strong>的大小刚好就是四行<br><img src="https://s2.ax1x.com/2020/02/12/17nLrR.png" alt="img"><br>DOS MZ文件头的结构体：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_DOS_HEADER</span> &#123;</span>      <span class="comment">// DOS .EXE header</span></span><br><span class="line">    WORD   e_magic;                     <span class="comment">// Magic number</span></span><br><span class="line">    WORD   e_cblp;                      <span class="comment">// Bytes on last page of file</span></span><br><span class="line">    WORD   e_cp;                        <span class="comment">// Pages in file</span></span><br><span class="line">    WORD   e_crlc;                      <span class="comment">// Relocations</span></span><br><span class="line">    WORD   e_cparhdr;                   <span class="comment">// Size of header in paragraphs</span></span><br><span class="line">    WORD   e_minalloc;                  <span class="comment">// Minimum extra paragraphs needed</span></span><br><span class="line">    WORD   e_maxalloc;                  <span class="comment">// Maximum extra paragraphs needed</span></span><br><span class="line">    WORD   e_ss;                        <span class="comment">// Initial (relative) SS value</span></span><br><span class="line">    WORD   e_sp;                        <span class="comment">// Initial SP value</span></span><br><span class="line">    WORD   e_csum;                      <span class="comment">// Checksum</span></span><br><span class="line">    WORD   e_ip;                        <span class="comment">// Initial IP value</span></span><br><span class="line">    WORD   e_cs;                        <span class="comment">// Initial (relative) CS value</span></span><br><span class="line">    WORD   e_lfarlc;                    <span class="comment">// File address of relocation table</span></span><br><span class="line">    WORD   e_ovno;                      <span class="comment">// Overlay number</span></span><br><span class="line">    WORD   e_res[<span class="number">4</span>];                    <span class="comment">// Reserved words</span></span><br><span class="line">    WORD   e_oemid;                     <span class="comment">// OEM identifier (for e_oeminfo)</span></span><br><span class="line">    WORD   e_oeminfo;                   <span class="comment">// OEM information; e_oemid specific</span></span><br><span class="line">    WORD   e_res2[<span class="number">10</span>];                  <span class="comment">// Reserved words</span></span><br><span class="line">    LONG   e_lfanew;                    <span class="comment">// File address of new exe header</span></span><br><span class="line">  &#125; IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;</span><br></pre></td></tr></table></figure>
+<h3 id="DOS块"><a href="#DOS块" class="headerlink" title="DOS块"></a>DOS块</h3><p><img src="https://s2.ax1x.com/2020/02/12/17njVx.png" alt="img"><br><strong>DOS Stub</strong>这部分并没有确定的大小 并且在32位系统之后已经被废弃</p>
+<p>那么如何确定DOS Stub的大小呢？<br>在上面已经提到<strong>IMAGE_DOS_HEADER</strong>结构为64个字节 而通过PE特征可以得到PE头的位置 那么这两个中间的大小即为DOS Stub的大小<br><img src="https://s2.ax1x.com/2020/02/12/17nva6.png" alt="img"></p>
+<h2 id="PE头"><a href="#PE头" class="headerlink" title="PE头"></a>PE头</h2><p>结构体：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_NT_HEADERS</span> &#123;</span></span><br><span class="line">    DWORD Signature;</span><br><span class="line">    IMAGE_FILE_HEADER FileHeader;</span><br><span class="line">    IMAGE_OPTIONAL_HEADER32 OptionalHeader;</span><br><span class="line">&#125; IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;</span><br></pre></td></tr></table></figure>
+<h3 id="PE文件头标志"><a href="#PE文件头标志" class="headerlink" title="PE文件头标志"></a>PE文件头标志</h3><p><img src="https://s2.ax1x.com/2020/02/12/17upGD.png" alt="img"><br>50 45 00 00这4个字节为PE文件头标志<br><img src="https://s2.ax1x.com/2020/02/12/17nxIK.png" alt="img"><br>这里所对应结构体中的</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DWORD Signature;</span><br></pre></td></tr></table></figure>
+<h3 id="PE文件表头（标准PE头）"><a href="#PE文件表头（标准PE头）" class="headerlink" title="PE文件表头（标准PE头）"></a>PE文件表头（标准PE头）</h3><p><img src="https://s2.ax1x.com/2020/02/12/17u9Re.png" alt="img"><br>PE文件表头大小为<strong>20</strong> 个字节<br>在PE文件头标志后往后数20个字节即为PE文件表头的范围<br><img src="https://s2.ax1x.com/2020/02/12/17uCxH.png" alt="img"><br>这里所对应结构体中的</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IMAGE_FILE_HEADER FileHeader;</span><br></pre></td></tr></table></figure>
+<p>标准PE头的声明：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_FILE_HEADER</span> &#123;</span></span><br><span class="line">    WORD    Machine;</span><br><span class="line">    WORD    NumberOfSections;</span><br><span class="line">    DWORD   TimeDateStamp;</span><br><span class="line">    DWORD   PointerToSymbolTable;</span><br><span class="line">    DWORD   NumberOfSymbols;</span><br><span class="line">    WORD    SizeOfOptionalHeader;</span><br><span class="line">    WORD    Characteristics;</span><br><span class="line">&#125; IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</span><br></pre></td></tr></table></figure>
+<h3 id="PE文件头可选部分（扩展PE头）"><a href="#PE文件头可选部分（扩展PE头）" class="headerlink" title="PE文件头可选部分（扩展PE头）"></a>PE文件头可选部分（扩展PE头）</h3><p><img src="https://s2.ax1x.com/2020/02/12/17noPU.png" alt="img"><br>扩展PE头在32位PE程序中的大小为<strong>224</strong>个字节 16进制标识为<strong>E0</strong><br>扩展PE头在64位PE程序中的大小为<strong>240</strong>个字节 16进制标识为<strong>F0</strong><br><strong>(此大小可被修改)</strong><br>在上面的标准PE头的声明中可以看到这样一个成员：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WORD    SizeOfOptionalHeader;</span><br></pre></td></tr></table></figure>
+<p>此成员就是用来标识扩展PE头大小的 修改此值即可改变扩展PE头的大小<br>在文件中的位置：<br><img src="https://s2.ax1x.com/2020/02/12/17nWbq.png" alt="img"><br>扩展PE头在文件中的范围：<br><img src="https://s2.ax1x.com/2020/02/12/17n4aV.png" alt="img"><br>拓展PE头所对应结构体中的</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IMAGE_OPTIONAL_HEADER32 OptionalHeader;</span><br></pre></td></tr></table></figure>
+<h2 id="节表"><a href="#节表" class="headerlink" title="节表"></a>节表</h2><p><img src="https://s2.ax1x.com/2020/02/12/17nRrn.png" alt="img"><br>每个节表中的数据为<strong>40</strong>个字节</p>
+<p><strong>（待续。。）</strong><br><strong>（待续。。）</strong><br><strong>（待续。。）</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ZDDR</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zddr.net/2020/02/12/PE/">https://zddr.net/2020/02/12/PE/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zddr.net" target="_blank">ZDDR's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://s2.ax1x.com/2020/02/11/1okrSx.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/02/27/DirectX%20SDK%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><img class="prev-cover" src="https://s2.ax1x.com/2020/02/27/3a5gYj.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">DirectX SDK学习笔记</div></div></a></div><div class="next-post pull-right"><a href="/2020/02/08/Hook/"><img class="next-cover" src="https://s2.ax1x.com/2020/02/01/1GlsKJ.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Hook</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFPE%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">什么是PE？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">什么是可执行文件？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PE%E5%A4%A7%E8%87%B4%E7%BB%93%E6%9E%84-%E7%BC%A9%E8%BF%9B%E6%8F%8F%E8%BF%B0%E5%8C%85%E5%90%AB%E5%85%B3%E7%B3%BB"><span class="toc-number">3.</span> <span class="toc-text">PE大致结构(缩进描述包含关系)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PE%E6%8C%87%E7%BA%B9"><span class="toc-number">4.</span> <span class="toc-text">PE指纹</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PE%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-number">5.</span> <span class="toc-text">PE结构体</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DOS%E9%83%A8%E5%88%86"><span class="toc-number">5.1.</span> <span class="toc-text">DOS部分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#DOS-MZ%E6%96%87%E4%BB%B6%E5%A4%B4"><span class="toc-number">5.1.1.</span> <span class="toc-text">DOS MZ文件头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DOS%E5%9D%97"><span class="toc-number">5.1.2.</span> <span class="toc-text">DOS块</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PE%E5%A4%B4"><span class="toc-number">5.2.</span> <span class="toc-text">PE头</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PE%E6%96%87%E4%BB%B6%E5%A4%B4%E6%A0%87%E5%BF%97"><span class="toc-number">5.2.1.</span> <span class="toc-text">PE文件头标志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PE%E6%96%87%E4%BB%B6%E8%A1%A8%E5%A4%B4%EF%BC%88%E6%A0%87%E5%87%86PE%E5%A4%B4%EF%BC%89"><span class="toc-number">5.2.2.</span> <span class="toc-text">PE文件表头（标准PE头）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PE%E6%96%87%E4%BB%B6%E5%A4%B4%E5%8F%AF%E9%80%89%E9%83%A8%E5%88%86%EF%BC%88%E6%89%A9%E5%B1%95PE%E5%A4%B4%EF%BC%89"><span class="toc-number">5.2.3.</span> <span class="toc-text">PE文件头可选部分（扩展PE头）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8A%82%E8%A1%A8"><span class="toc-number">5.3.</span> <span class="toc-text">节表</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer" style="background-image: url(https://s2.ax1x.com/2020/02/11/1okrSx.png)"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2021 By ZDDR</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>

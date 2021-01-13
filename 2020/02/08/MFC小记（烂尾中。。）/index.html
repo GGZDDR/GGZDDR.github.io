@@ -1,0 +1,235 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MFC小记（烂尾中。。） | ZDDR's blog</title><meta name="keywords" content="ZDDR,逆向,内核,Pwn"><meta name="author" content="ZDDR"><meta name="copyright" content="ZDDR"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="什么是MFC？MFC – Microsoft Foundation Classes 微软基础类库 以C++的类的形式封装了SDK的api，并带有一个应用程序框架 单文档MFC类的继承关系 更多MFC类的介绍可以查看官方文档☛[MFC Classes] 更多继承关系可以查看官方文档☛[Hierarchy Chart] MFC的子类化MFC的子类化相比较于SDK的子类化实现起来就相对简单一点了，因为M">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MFC小记（烂尾中。。）">
+<meta property="og:url" content="https://zddr.net/2020/02/08/MFC%E5%B0%8F%E8%AE%B0%EF%BC%88%E7%83%82%E5%B0%BE%E4%B8%AD%E3%80%82%E3%80%82%EF%BC%89/index.html">
+<meta property="og:site_name" content="ZDDR&#39;s blog">
+<meta property="og:description" content="什么是MFC？MFC – Microsoft Foundation Classes 微软基础类库 以C++的类的形式封装了SDK的api，并带有一个应用程序框架 单文档MFC类的继承关系 更多MFC类的介绍可以查看官方文档☛[MFC Classes] 更多继承关系可以查看官方文档☛[Hierarchy Chart] MFC的子类化MFC的子类化相比较于SDK的子类化实现起来就相对简单一点了，因为M">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2020/09/28/0AwcE4.png">
+<meta property="article:published_time" content="2020-02-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-09-06T16:00:00.000Z">
+<meta property="article:author" content="ZDDR">
+<meta property="article:tag" content="ZDDR,逆向,内核,Pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2020/09/28/0AwcE4.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zddr.net/2020/02/08/MFC%E5%B0%8F%E8%AE%B0%EF%BC%88%E7%83%82%E5%B0%BE%E4%B8%AD%E3%80%82%E3%80%82%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: ZDDR","link":"链接: ","source":"来源: ZDDR's blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-09-07 00:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://gitee.com/ZDDR/blog_img/raw/master/img/index_img/%E8%87%AA%E5%B7%B1%E7%9A%84%E5%A4%B4%E5%83%8F.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">18</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s1.ax1x.com/2020/09/28/0AwcE4.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZDDR's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">MFC小记（烂尾中。。）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-02-07T16:00:00.000Z" title="发表于 2020-02-08 00:00:00">2020-02-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-09-06T16:00:00.000Z" title="更新于 2020-09-07 00:00:00">2020-09-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/windows%E7%BC%96%E7%A8%8B/">windows编程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="什么是MFC？"><a href="#什么是MFC？" class="headerlink" title="什么是MFC？"></a>什么是MFC？</h1><p>MFC – Microsoft Foundation Classes 微软基础类库</p>
+<p>以C++的类的形式封装了SDK的api，并带有一个应用程序框架</p>
+<h1 id="单文档MFC类的继承关系"><a href="#单文档MFC类的继承关系" class="headerlink" title="单文档MFC类的继承关系"></a>单文档MFC类的继承关系</h1><p><img src="https://s1.ax1x.com/2020/09/22/wqgLAU.png" alt="img"></p>
+<p>更多MFC类的介绍可以查看官方文档☛[<a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/cpp/mfc/reference/mfc-classes?view=vs-2019">MFC Classes]</a></p>
+<p>更多继承关系可以查看官方文档☛[<a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/cpp/mfc/hierarchy-chart?view=vs-2019">Hierarchy Chart]</a></p>
+<h1 id="MFC的子类化"><a href="#MFC的子类化" class="headerlink" title="MFC的子类化"></a>MFC的子类化</h1><p>MFC的子类化相比较于SDK的子类化实现起来就相对简单一点了，因为MFC的控件已经封装成了一个个类，需要子类化的时候继承原本的类就行。</p>
+<h2 id="新建一个类"><a href="#新建一个类" class="headerlink" title="新建一个类"></a>新建一个类</h2><p><img src="https://s1.ax1x.com/2020/09/26/0iQvKP.png" alt="img"></p>
+<p>选择需要继承的控件的类，这里我使用Edit作为例子</p>
+<p><img src="https://s1.ax1x.com/2020/09/26/0iQrHU.png" alt="img"></p>
+<h2 id="添加消息处理函数"><a href="#添加消息处理函数" class="headerlink" title="添加消息处理函数"></a>添加消息处理函数</h2><p>在类视图中右键需要添加消息处理的类，选择类向导，添加WM_CHAR消息处理</p>
+<p><img src="https://s1.ax1x.com/2020/09/26/0iQ6N4.png" alt="img"></p>
+<p>然后vs就会自动生成代码</p>
+<p><img src="https://s1.ax1x.com/2020/09/26/0iQwj0.png" alt="img"></p>
+<p>在这添加自己想要的代码即可</p>
+<h2 id="将控件绑定消息处理函数"><a href="#将控件绑定消息处理函数" class="headerlink" title="将控件绑定消息处理函数"></a>将控件绑定消息处理函数</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">右键控件&#96;-&gt;&#96;添加变量</span><br></pre></td></tr></table></figure>
+<p>在<code>名称</code>处填入一个名字即可</p>
+<p><img src="https://s1.ax1x.com/2020/09/26/0iQdcq.png" alt="img"></p>
+<p>点击确定后就可以看见对话框的类中多了一个成员变量</p>
+<p><img src="https://s1.ax1x.com/2020/09/26/0iQDBT.png" alt="img"></p>
+<p>接下来包含我们刚刚新建类的头文件</p>
+<p><img src="https://s1.ax1x.com/2020/09/26/0iQa3n.png" alt="img"></p>
+<p>再把原本的<strong>CEdit</strong>替换成我们自己的<strong>CMyEdit</strong>即可实现子类化</p>
+<p><img src="https://s1.ax1x.com/2020/09/26/0iQyEF.png" alt="img"></p>
+<h1 id="控件使用"><a href="#控件使用" class="headerlink" title="控件使用"></a>控件使用</h1><h2 id="使用SDK的方法获取编辑框内容"><a href="#使用SDK的方法获取编辑框内容" class="headerlink" title="使用SDK的方法获取编辑框内容"></a>使用SDK的方法获取编辑框内容</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CMFCSubClassDlg::OnBnClickedButton1</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> szBuff[MAXBYTE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="comment">// CMFCSubClassDlg中包含了m_hWnd直接使用就行 也可以使用GetSelfHwnd()获取</span></span><br><span class="line">    <span class="comment">//::使用sdk中的函数，避免使用类中定义的对象</span></span><br><span class="line">	::GetDlgItemText(m_hWnd,EDT_NAME,szBuff,<span class="keyword">sizeof</span>(szBuff));</span><br><span class="line">	AfxMessageBox(szBuff);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="使用MFC的方法获取编辑框内容"><a href="#使用MFC的方法获取编辑框内容" class="headerlink" title="使用MFC的方法获取编辑框内容"></a>使用MFC的方法获取编辑框内容</h2><h3 id="GetDlgItemText"><a href="#GetDlgItemText" class="headerlink" title="GetDlgItemText"></a>GetDlgItemText</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CString strText;</span><br><span class="line">GetDlgItemText(EDT_NAME,strText);</span><br><span class="line">AfxMessageBox(strText);</span><br></pre></td></tr></table></figure>
+<h3 id="GetWindowText"><a href="#GetWindowText" class="headerlink" title="GetWindowText"></a>GetWindowText</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CString strText;</span><br><span class="line">CWnd *pEdit = GetDlgItem(EDT_NAME);</span><br><span class="line">pEdit-&gt;GetWindowText(strText);</span><br><span class="line">AfxMessageBox(strText);</span><br></pre></td></tr></table></figure>
+<h3 id="SendMessage"><a href="#SendMessage" class="headerlink" title="SendMessage"></a>SendMessage</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CWnd *pEdit = GetDlgItem(EDT_NAME);</span><br><span class="line"><span class="keyword">char</span> szBuff[MAXBYTE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">pEdit-&gt;SendMessage(WM_GETTEXT,<span class="keyword">sizeof</span>(szBuff),(LPARAM)szBuff);</span><br><span class="line">AfxMessageBox(szBuff);</span><br></pre></td></tr></table></figure>
+<h3 id="使用MFC中的DDX"><a href="#使用MFC中的DDX" class="headerlink" title="使用MFC中的DDX"></a>使用MFC中的DDX</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">选中编辑框&#96;-&gt;&#96;右键&#96;-&gt;&#96;添加变量</span><br></pre></td></tr></table></figure>
+<p>在<code>类别</code>中选择<code>值</code>,设置一个名称即可</p>
+<p><img src="https://s1.ax1x.com/2020/09/27/0FmrX8.png" alt="img"></p>
+<p>使用方法：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//UpdateData如果是TRUE，那么则将编辑框里的内容存入CString，如果是FALSE，则将CString里的内容填入编辑框</span></span><br><span class="line">UpdateData(TRUE);</span><br><span class="line">AfxMessageBox(m_strText);</span><br></pre></td></tr></table></figure>
+<p>如果要设置的话：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m_strText = <span class="string">&quot;测试&quot;</span>;</span><br><span class="line">UpdateData(FALSE);</span><br></pre></td></tr></table></figure>
+<h2 id="查看控件与变量的绑定"><a href="#查看控件与变量的绑定" class="headerlink" title="查看控件与变量的绑定"></a>查看控件与变量的绑定</h2><p>变量和控件是在<strong>DoDataExchange</strong>这个函数中进行绑定的,可以在函数内查看相关的绑定情况</p>
+<p><img src="https://s1.ax1x.com/2020/09/27/0FmynS.png" alt="img"></p>
+<p>另外也可以在类向导的成员变量中查看</p>
+<p><img src="https://s1.ax1x.com/2020/09/27/0Fm60g.png" alt="img"></p>
+<h2 id="单选按钮的使用"><a href="#单选按钮的使用" class="headerlink" title="单选按钮的使用"></a>单选按钮的使用</h2><h3 id="一个个判断是否选中"><a href="#一个个判断是否选中" class="headerlink" title="一个个判断是否选中"></a>一个个判断是否选中</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CButton* pRdbMan = (CButton*)GetDlgItem(RDB_MAN);</span><br><span class="line">CButton* pRdbWomen = (CButton*)GetDlgItem(RDB_WOMEN);</span><br><span class="line">CButton* pRdbOther = (CButton*)GetDlgItem(RDB_OTHER);</span><br><span class="line">CButton* pRdbUnknown = (CButton*)GetDlgItem(RDB_UNKNOWN);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (pRdbMan-&gt;GetCheck() == <span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;男&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="使用DDX"><a href="#使用DDX" class="headerlink" title="使用DDX"></a>使用DDX</h3><p>开启<strong>单选按钮</strong>的<strong>Group</strong>属性即可对按钮进行DDX绑定</p>
+<p><img src="https://s1.ax1x.com/2020/09/28/0AwBvV.png" alt="img"></p>
+<p>将单选按钮绑定为int类型</p>
+<p><img src="https://s1.ax1x.com/2020/09/28/0Aww3q.png" alt="img"></p>
+<p>判断代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">UpdateData(TRUE);</span><br><span class="line"><span class="keyword">switch</span> (m_nGender)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;男&quot;</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;女&quot;</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;其他&quot;</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;未知&quot;</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="复选按钮的使用"><a href="#复选按钮的使用" class="headerlink" title="复选按钮的使用"></a>复选按钮的使用</h2><p>将复选按钮绑定为BOOL类型</p>
+<p><img src="https://s1.ax1x.com/2020/09/28/0AwdCn.png" alt="img"></p>
+<p>判断代码</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">UpdateData(TRUE);</span><br><span class="line"><span class="keyword">if</span> (m_bCode)</span><br><span class="line">&#123;</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;code&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (m_bDebug)</span><br><span class="line">&#123;</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;Debug&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (m_bReverse)</span><br><span class="line">&#123;</span><br><span class="line">	AfxMessageBox(<span class="string">&quot;Reverse&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="组合框的使用"><a href="#组合框的使用" class="headerlink" title="组合框的使用"></a>组合框的使用</h2><h3 id="绑定组合框"><a href="#绑定组合框" class="headerlink" title="绑定组合框"></a>绑定组合框</h3><p><img src="https://s1.ax1x.com/2020/09/28/0Aw0g0.png" alt="img"></p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// <span class="doctag">TODO:</span> 在此添加额外的初始化代码</span></span><br><span class="line">m_ComboText.AddString(<span class="string">&quot;选项1&quot;</span>);</span><br><span class="line">m_ComboText.AddString(<span class="string">&quot;选项2&quot;</span>);</span><br><span class="line">m_ComboText.AddString(<span class="string">&quot;选项3&quot;</span>);</span><br><span class="line">m_ComboText.AddString(<span class="string">&quot;选项4&quot;</span>);</span><br><span class="line">m_ComboText.AddString(<span class="string">&quot;选项5&quot;</span>);</span><br><span class="line">m_ComboText.AddString(<span class="string">&quot;选项6&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>组合框默认是开启排序的，如果不需要使用可以关闭</p>
+<p><img src="https://s1.ax1x.com/2020/09/28/0AwU4s.png" alt="img"></p>
+<h3 id="设置默认值"><a href="#设置默认值" class="headerlink" title="设置默认值"></a>设置默认值</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">m_ComboText.SetCurSel(<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="获取选中内容"><a href="#获取选中内容" class="headerlink" title="获取选中内容"></a>获取选中内容</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> nCurSel = m_ComboText.GetCurSel();</span><br><span class="line">CString StrLoc;</span><br><span class="line">m_ComboText.GetLBText(nCurSel,StrLoc);</span><br><span class="line">AfxMessageBox(StrLoc);</span><br></pre></td></tr></table></figure>
+<h2 id="List-Control"><a href="#List-Control" class="headerlink" title="List Control"></a>List Control</h2><h3 id="添加变量"><a href="#添加变量" class="headerlink" title="添加变量"></a>添加变量</h3><p><img src="https://s1.ax1x.com/2020/09/28/0AwruT.png" alt="img"></p>
+<h3 id="初始化-1"><a href="#初始化-1" class="headerlink" title="初始化"></a>初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//设置风格 选中一行</span></span><br><span class="line"></span><br><span class="line">m_lstcTextInfo.SetExtendedStyle(m_lstcTextInfo.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);</span><br><span class="line"></span><br><span class="line"><span class="comment">//添加表头</span></span><br><span class="line"><span class="keyword">int</span> nColIdx = <span class="number">0</span>;</span><br><span class="line">m_lstcTextInfo.InsertColumn(nColIdx++, <span class="string">&quot;学号&quot;</span>);</span><br><span class="line">m_lstcTextInfo.InsertColumn(nColIdx++, <span class="string">&quot;姓名&quot;</span>);</span><br><span class="line">m_lstcTextInfo.InsertColumn(nColIdx++, <span class="string">&quot;性别&quot;</span>);</span><br><span class="line">m_lstcTextInfo.InsertColumn(nColIdx++, <span class="string">&quot;爱好&quot;</span>);</span><br><span class="line">m_lstcTextInfo.InsertColumn(nColIdx++, <span class="string">&quot;班级&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="自动调整列宽"><a href="#自动调整列宽" class="headerlink" title="自动调整列宽"></a>自动调整列宽</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//自动调整列宽</span></span><br><span class="line">CHeaderCtrl* pHdrCtr = m_lstcTextInfo.GetHeaderCtrl();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pHdrCtr-&gt;GetItemCount(); ++i)</span><br><span class="line">&#123;</span><br><span class="line">	m_lstcTextInfo.SetColumnWidth(i, LVSCW_AUTOSIZE_USEHEADER);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="插入内容"><a href="#插入内容" class="headerlink" title="插入内容"></a>插入内容</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> nItemIdx = <span class="number">0</span>;<span class="comment">//行数</span></span><br><span class="line"><span class="keyword">int</span> nColIdx = <span class="number">0</span>;</span><br><span class="line">m_lstcTextInfo.InsertItem(nItemIdx, <span class="string">&quot;1001&quot;</span>);</span><br><span class="line">m_lstcTextInfo.SetItemText(nItemIdx, ++nColIdx, <span class="string">&quot;小红&quot;</span>);</span><br><span class="line">m_lstcTextInfo.SetItemText(nItemIdx, ++nColIdx, <span class="string">&quot;女&quot;</span>);</span><br><span class="line">m_lstcTextInfo.SetItemText(nItemIdx, ++nColIdx, <span class="string">&quot;debug&quot;</span>);</span><br><span class="line">m_lstcTextInfo.SetItemText(nItemIdx++, ++nColIdx, <span class="string">&quot;1班&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="获取选中内容-1"><a href="#获取选中内容-1" class="headerlink" title="获取选中内容"></a>获取选中内容</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> nIdx = m_lstcTextInfo.GetSelectionMark();</span><br><span class="line"><span class="keyword">int</span> nSubItemText = <span class="number">0</span>;</span><br><span class="line">CString strID = m_lstcTextInfo.GetItemText(nIdx, nSubItemText++);</span><br><span class="line">CString strName = m_lstcTextInfo.GetItemText(nIdx, nSubItemText++);</span><br><span class="line">CString strGender = m_lstcTextInfo.GetItemText(nIdx, nSubItemText++);</span><br><span class="line">CString strHobby = m_lstcTextInfo.GetItemText(nIdx, nSubItemText++);</span><br><span class="line">CString strClass = m_lstcTextInfo.GetItemText(nIdx, nSubItemText++);</span><br><span class="line">CString strFmt;</span><br><span class="line">strFmt.Format(<span class="string">&quot;索引%d 学号%s 姓名%s 性别%s 爱好%s 班级%s &quot;</span>, nIdx, strID, strName, strGender, strHobby, strClass);</span><br><span class="line">AfxMessageBox(strFmt);</span><br></pre></td></tr></table></figure>
+<h3 id="删除内容"><a href="#删除内容" class="headerlink" title="删除内容"></a>删除内容</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> nIdx = m_lstcTextInfo.GetSelectionMark();</span><br><span class="line">m_lstcTextInfo.DeleteItem(nIdx);</span><br></pre></td></tr></table></figure>
+<h1 id="双缓冲绘图"><a href="#双缓冲绘图" class="headerlink" title="双缓冲绘图"></a>双缓冲绘图</h1><h2 id="双缓冲绘图的步骤"><a href="#双缓冲绘图的步骤" class="headerlink" title="双缓冲绘图的步骤"></a>双缓冲绘图的步骤</h2><ul>
+<li>1.创建内存DC（兼容DC）</li>
+<li>2.创建兼容位图</li>
+<li>3.在内存绘制图形</li>
+<li>4.将图片从内存贴到客户区</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">ZDDR</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zddr.net/2020/02/08/MFC%E5%B0%8F%E8%AE%B0%EF%BC%88%E7%83%82%E5%B0%BE%E4%B8%AD%E3%80%82%E3%80%82%EF%BC%89/">https://zddr.net/2020/02/08/MFC小记（烂尾中。。）/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zddr.net" target="_blank">ZDDR's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://s1.ax1x.com/2020/09/28/0AwcE4.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/02/08/Hook/"><img class="prev-cover" src="https://s2.ax1x.com/2020/02/01/1GlsKJ.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Hook</div></div></a></div><div class="next-post pull-right"><a href="/2020/02/08/%E6%B1%87%E7%BC%96%E5%B0%8F%E8%AE%B0/"><img class="next-cover" src="https://s2.ax1x.com/2019/12/09/QwRrbF.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">汇编小记</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFMFC%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">什么是MFC？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%95%E6%96%87%E6%A1%A3MFC%E7%B1%BB%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB"><span class="toc-number">2.</span> <span class="toc-text">单文档MFC类的继承关系</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#MFC%E7%9A%84%E5%AD%90%E7%B1%BB%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">MFC的子类化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B0%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%B1%BB"><span class="toc-number">3.1.</span> <span class="toc-text">新建一个类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.</span> <span class="toc-text">添加消息处理函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%86%E6%8E%A7%E4%BB%B6%E7%BB%91%E5%AE%9A%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">将控件绑定消息处理函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8E%A7%E4%BB%B6%E4%BD%BF%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">控件使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8SDK%E7%9A%84%E6%96%B9%E6%B3%95%E8%8E%B7%E5%8F%96%E7%BC%96%E8%BE%91%E6%A1%86%E5%86%85%E5%AE%B9"><span class="toc-number">4.1.</span> <span class="toc-text">使用SDK的方法获取编辑框内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8MFC%E7%9A%84%E6%96%B9%E6%B3%95%E8%8E%B7%E5%8F%96%E7%BC%96%E8%BE%91%E6%A1%86%E5%86%85%E5%AE%B9"><span class="toc-number">4.2.</span> <span class="toc-text">使用MFC的方法获取编辑框内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GetDlgItemText"><span class="toc-number">4.2.1.</span> <span class="toc-text">GetDlgItemText</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GetWindowText"><span class="toc-number">4.2.2.</span> <span class="toc-text">GetWindowText</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SendMessage"><span class="toc-number">4.2.3.</span> <span class="toc-text">SendMessage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8MFC%E4%B8%AD%E7%9A%84DDX"><span class="toc-number">4.2.4.</span> <span class="toc-text">使用MFC中的DDX</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%8E%A7%E4%BB%B6%E4%B8%8E%E5%8F%98%E9%87%8F%E7%9A%84%E7%BB%91%E5%AE%9A"><span class="toc-number">4.3.</span> <span class="toc-text">查看控件与变量的绑定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E9%80%89%E6%8C%89%E9%92%AE%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">4.4.</span> <span class="toc-text">单选按钮的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E4%B8%AA%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E9%80%89%E4%B8%AD"><span class="toc-number">4.4.1.</span> <span class="toc-text">一个个判断是否选中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8DDX"><span class="toc-number">4.4.2.</span> <span class="toc-text">使用DDX</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E9%80%89%E6%8C%89%E9%92%AE%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">4.5.</span> <span class="toc-text">复选按钮的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E6%A1%86%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">4.6.</span> <span class="toc-text">组合框的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%91%E5%AE%9A%E7%BB%84%E5%90%88%E6%A1%86"><span class="toc-number">4.6.1.</span> <span class="toc-text">绑定组合框</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">4.6.2.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E9%BB%98%E8%AE%A4%E5%80%BC"><span class="toc-number">4.6.3.</span> <span class="toc-text">设置默认值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E9%80%89%E4%B8%AD%E5%86%85%E5%AE%B9"><span class="toc-number">4.6.4.</span> <span class="toc-text">获取选中内容</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#List-Control"><span class="toc-number">4.7.</span> <span class="toc-text">List Control</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E5%8F%98%E9%87%8F"><span class="toc-number">4.7.1.</span> <span class="toc-text">添加变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96-1"><span class="toc-number">4.7.2.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E8%B0%83%E6%95%B4%E5%88%97%E5%AE%BD"><span class="toc-number">4.7.3.</span> <span class="toc-text">自动调整列宽</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E5%86%85%E5%AE%B9"><span class="toc-number">4.7.4.</span> <span class="toc-text">插入内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E9%80%89%E4%B8%AD%E5%86%85%E5%AE%B9-1"><span class="toc-number">4.7.5.</span> <span class="toc-text">获取选中内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E5%86%85%E5%AE%B9"><span class="toc-number">4.7.6.</span> <span class="toc-text">删除内容</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%8C%E7%BC%93%E5%86%B2%E7%BB%98%E5%9B%BE"><span class="toc-number">5.</span> <span class="toc-text">双缓冲绘图</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E7%BC%93%E5%86%B2%E7%BB%98%E5%9B%BE%E7%9A%84%E6%AD%A5%E9%AA%A4"><span class="toc-number">5.1.</span> <span class="toc-text">双缓冲绘图的步骤</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer" style="background-image: url(https://s1.ax1x.com/2020/09/28/0AwcE4.png)"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2021 By ZDDR</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
