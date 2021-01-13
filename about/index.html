@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>about | ZDDR's blog</title><meta name="keywords" content="ZDDR,逆向,内核,Pwn"><meta name="author" content="ZDDR"><meta name="copyright" content="ZDDR"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="关于我  技能栈：C语言 ：C++ ：Python ：Csharp ：汇编 ：PHP ：HTML 关于我的一些评价 噢我的上帝,ZDDR他真的太厉害了,噢要不是他,我根本不可能编写出Windows,我向我的靴子发誓! 比尔盖茨CEO, Microsoft Corporation.   感谢他为Steam做出的卓越贡献！ 加布·纽维尔CEO, Valve Software.   他改变了世界！ 唐纳">
+<meta property="og:type" content="website">
+<meta property="og:title" content="about">
+<meta property="og:url" content="https://zddr.net/about/index.html">
+<meta property="og:site_name" content="ZDDR&#39;s blog">
+<meta property="og:description" content="关于我  技能栈：C语言 ：C++ ：Python ：Csharp ：汇编 ：PHP ：HTML 关于我的一些评价 噢我的上帝,ZDDR他真的太厉害了,噢要不是他,我根本不可能编写出Windows,我向我的靴子发誓! 比尔盖茨CEO, Microsoft Corporation.   感谢他为Steam做出的卓越贡献！ 加布·纽维尔CEO, Valve Software.   他改变了世界！ 唐纳">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2021-01-13T10:30:00.000Z">
+<meta property="article:modified_time" content="2021-01-13T10:46:41.021Z">
+<meta property="article:author" content="ZDDR">
+<meta property="article:tag" content="ZDDR,逆向,内核,Pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zddr.net/about/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: false,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2021-01-13 18:46:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">1</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="not-index-bg" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZDDR's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="page-site-info"><h1 id="site-title">about</h1></div></header><main class="layout" id="content-inner"><div id="page"><div id="article-container"><h1 id="关于我"><a href="#关于我" class="headerlink" title="关于我"></a>关于我</h1><p><a target="_blank" rel="noopener" href="https://gitee.com/ZDDR/blog_img/raw/master/img/index_img/About.png"><img src="https://gitee.com/ZDDR/blog_img/raw/master/img/index_img/About.png" alt="img"></a></p>
+<p><a target="_blank" rel="noopener" href="http://ghchart.rshah.org/ggzddr"><img src="http://ghchart.rshah.org/ggzddr" alt="ZDDR&#39;s Github chart"></a></p>
+<h2 id="技能栈"><a href="#技能栈" class="headerlink" title="技能栈"></a>技能栈</h2><p><svg t="1599583430593" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4518" width="20" height="20"><path d="M701.866667 681.386667l17.92 104.106666c-11.093333 5.973333-29.013333 11.52-52.906667 16.64-24.32 5.546667-52.906667 8.533333-85.76 8.533334-94.293333-1.706667-165.12-29.866667-212.48-83.626667-48.64-54.186667-71.68-122.88-71.68-206.08C298.666667 422.4 327.68 346.88 384 293.973333 438.613333 240.64 508.586667 213.333333 593.066667 213.333333c32 0 59.733333 2.986667 82.773333 8.106667s40.106667 10.666667 51.2 17.066667l-25.6 106.24-44.373333-14.506667c-17.066667-4.266667-37.12-6.4-59.733334-6.4-49.066667-0.426667-90.026667 15.36-122.026666 46.933333-32.426667 31.146667-48.64 78.933333-50.346667 142.506667 0.426667 58.026667 15.786667 103.253333 46.08 136.533333 30.293333 32.853333 72.533333 49.92 127.573333 50.346667l56.746667-5.12c18.346667-3.413333 33.706667-8.106667 46.506667-13.653333z" fill="#0277BD" p-id="4519"></path></svg>：C语言</p>
+<p><svg t="1599584420013" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="702" width="20" height="20"><path d="M426.666667 681.386667l17.493333 104.106666c-11.093333 5.973333-29.013333 11.52-52.906667 16.64-24.32 5.546667-52.906667 8.533333-85.76 8.533334-94.293333-1.706667-165.12-29.866667-212.48-83.626667C45.226667 672.853333 21.333333 604.16 21.333333 520.96c2.133333-98.56 30.72-174.08 85.333334-226.986667C162.986667 240.64 232.96 213.333333 317.44 213.333333c32 0 59.733333 2.986667 82.773333 8.106667s40.106667 10.666667 51.2 17.066667L426.666667 344.746667l-45.226667-14.506667c-17.066667-4.266667-36.693333-6.4-59.306667-6.4-49.493333-0.426667-90.453333 15.36-122.453333 46.933333-32.426667 31.146667-49.066667 78.933333-50.346667 142.506667 0 58.026667 15.786667 103.253333 46.08 136.533333 30.293333 32.853333 72.96 49.92 127.573334 50.346667l56.746666-5.12c18.346667-3.413333 33.706667-8.106667 46.933334-13.653333m21.333333-212.053334h85.333333V384h85.333334v85.333333h85.333333v85.333334h-85.333333v85.333333h-85.333334v-85.333333h-85.333333v-85.333334m298.666667 0h85.333333V384h85.333333v85.333333h85.333334v85.333334h-85.333334v85.333333h-85.333333v-85.333333h-85.333333z" fill="#0277BD" p-id="703"></path></svg>：C++</p>
+<p><svg t="1599584559523" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1099" width="20" height="20"><path d="M420.693333 85.333333C353.28 85.333333 298.666667 139.946667 298.666667 207.36v71.68h183.04c16.64 0 30.293333 24.32 30.293333 40.96H207.36C139.946667 320 85.333333 374.613333 85.333333 442.026667v161.322666c0 67.413333 54.613333 122.026667 122.026667 122.026667h50.346667v-114.346667c0-67.413333 54.186667-122.026667 121.6-122.026666h224c67.413333 0 122.026667-54.229333 122.026666-121.642667V207.36C725.333333 139.946667 670.72 85.333333 603.306667 85.333333z m-30.72 68.693334c17.066667 0 30.72 5.12 30.72 30.293333s-13.653333 38.016-30.72 38.016c-16.64 0-30.293333-12.8-30.293333-37.973333s13.653333-30.336 30.293333-30.336z" fill="#3C78AA" p-id="1100"></path><path d="M766.250667 298.666667v114.346666a121.6 121.6 0 0 1-121.6 121.984H420.693333A121.6 121.6 0 0 0 298.666667 656.597333v160a122.026667 122.026667 0 0 0 122.026666 122.026667h182.613334A122.026667 122.026667 0 0 0 725.333333 816.64v-71.68h-183.082666c-16.64 0-30.250667-24.32-30.250667-40.96h304.64A122.026667 122.026667 0 0 0 938.666667 581.973333v-161.28a122.026667 122.026667 0 0 0-122.026667-122.026666zM354.986667 491.221333l-0.170667 0.170667c0.512-0.085333 1.066667-0.042667 1.621333-0.170667z m279.04 310.442667c16.64 0 30.293333 12.8 30.293333 37.973333a30.293333 30.293333 0 0 1-30.293333 30.293334c-17.066667 0-30.72-5.12-30.72-30.293334s13.653333-37.973333 30.72-37.973333z" fill="#FDD835" p-id="1101"></path></svg>：Python</p>
+<p><svg t="1599584626036" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2114" width="20" height="20"><path d="M490.666667 681.386667l17.493333 104.106666c-11.093333 5.973333-29.013333 11.52-52.906667 16.64-24.32 5.546667-52.906667 8.533333-85.76 8.533334-94.293333-1.706667-165.12-29.866667-212.48-83.626667C109.226667 672.853333 85.333333 604.16 85.333333 520.96c2.133333-98.56 30.72-174.08 85.333334-226.986667C226.986667 240.64 296.96 213.333333 381.44 213.333333c32 0 59.733333 2.986667 82.773333 8.106667s40.106667 10.666667 51.2 17.066667l-24.746666 106.24-45.226667-14.506667c-17.066667-4.266667-36.693333-6.4-59.306667-6.4-49.493333-0.426667-90.453333 15.36-122.453333 46.933333-32.426667 31.146667-49.066667 78.933333-50.346667 142.506667 0 58.026667 15.786667 103.253333 46.08 136.533333 30.293333 32.853333 72.96 49.92 127.573334 50.346667l56.746666-5.12c18.346667-3.413333 33.706667-8.106667 46.933334-13.653333M592.64 810.666667l26.026667-170.666667H554.666667l14.506666-85.333333h64l13.653334-85.333334h-64L597.333333 384h64l26.026667-170.666667h85.333333l-26.026666 170.666667h42.666666l26.026667-170.666667h85.333333l-26.026666 170.666667H938.666667l-14.506667 85.333333h-64l-13.653333 85.333334h64L896 640h-64l-26.026667 170.666667h-85.333333l26.026667-170.666667h-42.666667l-26.026667 170.666667h-85.333333m125.866667-256h42.666666l13.653334-85.333334h-42.666667l-13.653333 85.333334z" fill="#0277BD" p-id="2115"></path></svg>：Csharp</p>
+<p><svg t="1610534716981" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1792" width="20" height="20"><path d="M332.799002 686.081014m-332.799002 0a332.799002 332.799002 0 1 0 665.598003 0 332.799002 332.799002 0 1 0-665.598003 0Z" fill="#CCE4F2" p-id="1793"></path><path d="M883.19735 1024h-639.99808A141.055577 141.055577 0 0 1 102.399693 883.200422v-742.397772A141.055577 141.055577 0 0 1 243.19927 0.003072h516.350451a89.087733 89.087733 0 0 1 63.231811 25.599923l189.695431 189.695431A38.399885 38.399885 0 0 1 1023.996928 243.202342v639.99808a141.055577 141.055577 0 0 1-140.799578 140.799578zM243.19927 76.802842A63.999808 63.999808 0 0 0 179.199462 140.80265v742.397772A63.999808 63.999808 0 0 0 243.19927 947.20023h639.99808a63.999808 63.999808 0 0 0 63.999808-63.999808V259.074295l-179.199462-179.199463a12.799962 12.799962 0 0 0-8.447975-3.07199z" fill="#434260" p-id="1794"></path><path d="M395.774813 560.64139h-78.591765l-19.455941 64.511807h-36.095892l75.007775-226.047322h41.215876l75.007775 226.047322H414.718756z m-8.703974-27.903916l-8.959973-30.463909c-7.679977-25.599923-14.335957-49.663851-21.503936-75.263774-6.399981 25.599923-13.567959 51.199846-20.991937 75.263774l-9.215972 30.463909zM466.430601 595.969284l20.991937-25.599923a87.551737 87.551737 0 0 0 60.159819 25.599923c27.391918 0 42.751872-12.799962 42.751872-31.999904s-15.359954-27.135919-36.351891-36.351891l-31.231906-13.567959a65.023805 65.023805 0 0 1-46.079862-59.135823 67.071799 67.071799 0 0 1 74.239777-62.207813 96.76771 96.76771 0 0 1 68.351795 28.671914l-18.687944 22.783932a72.191783 72.191783 0 0 0-49.663851-20.22394c-23.039931 0-38.143886 11.007967-38.143885 29.183913s18.175945 25.599923 36.60789 34.047897l30.975907 13.311961a63.23181 63.23181 0 0 1 46.079862 62.719811c0 36.351891-29.95191 65.791803-79.615761 65.791803a112.639662 112.639662 0 0 1-80.383759-33.023901zM669.181992 399.105875h40.959878l41.471875 114.175657c5.119985 15.103955 9.727971 30.463909 15.103955 45.823863H767.997696c5.119985-15.359954 9.471972-30.719908 14.847955-45.823863l40.959878-114.175657h41.215876v226.047322h-33.2799v-111.871665c0-20.223939 2.815992-49.407852 4.607986-70.143789l-18.175946 51.199846-39.423881 107.775677h-22.015934L716.79785 495.617585l-17.919947-51.199846c1.535995 20.479939 4.351987 49.663851 4.351987 70.143789v111.871665h-34.047898z" fill="#434260" p-id="1795"></path></svg>：汇编</p>
+<p><svg t="1599584861965" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="26785" width="20" height="20"><path d="M161.792 578.56c27.648 0 49.152-4.096 61.44-15.36 12.288-10.24 21.504-27.648 26.624-52.224 4.096-23.552 3.072-37.888-4.096-48.128-7.168-9.216-24.576-13.312-51.2-13.312h-45.056l-24.576 130.048c0-1.024 36.864-1.024 36.864-1.024zM15.36 737.28c-1.024 0-4.096-1.024-4.096-3.072-1.024-1.024-1.024-3.072-1.024-6.144l64.512-342.016c0-3.072 3.072-6.144 6.144-6.144h141.312c45.056 0 76.8 12.288 98.304 36.864 21.504 24.576 27.648 58.368 18.432 100.352-3.072 17.408-9.216 33.792-17.408 48.128-7.168 13.312-18.432 27.648-30.72 39.936-15.36 13.312-31.744 24.576-51.2 30.72-18.432 6.144-40.96 9.216-70.656 9.216H112.64l-17.408 86.016c0 3.072-3.072 6.144-6.144 6.144H15.36z m531.456-91.136c-1.024 0-4.096-1.024-4.096-3.072-1.024-1.024-1.024-3.072-1.024-6.144l29.696-150.528c3.072-13.312 1.024-24.576-1.024-29.696-3.072-3.072-9.216-7.168-30.72-7.168h-52.224l-34.816 189.44c0 3.072-3.072 6.144-6.144 6.144h-72.704c-1.024 0-4.096-1.024-4.096-3.072-1.024-2.048-1.024-4.096-1.024-7.168l64.512-342.016c0-3.072 3.072-6.144 6.144-6.144H512c1.024 0 4.096 1.024 4.096 3.072 1.024 1.024 1.024 3.072 1.024 6.144L501.76 378.88h55.296c44.032 0 70.656 7.168 88.064 23.552 17.408 16.384 23.552 40.96 15.36 76.8l-31.744 160.768c0 3.072-3.072 6.144-6.144 6.144h-75.776c0-1.024 0 0 0 0z m279.552-67.584c29.696 0 51.2-4.096 64.512-15.36s23.552-27.648 27.648-52.224c4.096-23.552 3.072-37.888-4.096-48.128-7.168-9.216-26.624-13.312-52.224-13.312h-46.08l-26.624 130.048c-1.024-1.024 36.864-1.024 36.864-1.024zM674.816 737.28c-1.024 0-4.096-1.024-6.144-3.072-1.024-1.024-1.024-3.072-1.024-6.144l66.56-342.016c0-3.072 3.072-6.144 7.168-6.144h146.432c46.08 0 79.872 12.288 102.4 36.864 21.504 24.576 27.648 58.368 20.48 100.352-3.072 17.408-9.216 33.792-17.408 48.128-7.168 13.312-18.432 27.648-31.744 39.936-15.36 13.312-33.792 24.576-54.272 30.72-18.432 6.144-44.032 9.216-74.752 9.216h-58.368L757.76 731.136c0 3.072-3.072 6.144-7.168 6.144h-75.776z" fill="#7A9ACE" p-id="26786"></path></svg>：PHP</p>
+<p><svg t="1599584905293" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="27570" width="20" height="20"><path d="M869.56139 992.952238l-0.448112 0.256064-0.768192 0.32008c-16.004001 18.692673-38.473618 30.407602-63.11978 30.407602l-586.386597 0c-24.646162 0-47.115779-11.714929-63.631908-30.727682l0-0.256064-0.256064 0.256064C138.434609 974.003501 128.384096 947.180795 128.384096 918.437609L128.384096 105.562391c0-28.807202 10.050513-55.053763 26.566642-74.002501C171.722931 12.227057 194.128532 0 218.83871 0l399.587897 0c8.898225 0 17.732433 4.737184 23.941985 11.714929l243.452863 284.67917c6.72168 8.386097 9.794449 18.180545 9.794449 28.487122l0 0.576144 0 593.044261C895.615904 947.180795 885.565391 973.427357 869.56139 992.952238zM396.803201 518.913728C408.646162 510.527632 412.615154 491.642911 405.317329 478.391598c-6.977744-14.339585-23.045761-18.884721-34.888722-10.498625L202.130533 582.865716c-15.491873 11.522881-16.068017 39.113778 0 50.700675l168.234059 115.292823c11.842961 8.386097 27.910978 4.16104 34.888722-10.114529 7.297824-13.955489 3.328832-32.136034-8.514129-40.522131L265.634409 608.088022 396.803201 518.913728zM584.498125 386.08052C571.182796 380.127032 556.523131 387.808952 551.08177 402.852713l-130.592648 389.793448c-5.185296 14.659665 1.216304 32.136034 14.275569 38.089522C448.464116 837.009252 462.995749 829.327332 468.501125 813.963491l130.592648-390.113528C603.95899 409.190298 597.237309 392.354089 584.498125 386.08052zM614.265566 478.391598C606.967742 491.642911 610.616654 510.527632 622.779695 518.913728l131.168792 89.174294-131.168792 90.19855c-12.163041 8.386097-15.811953 26.566642-8.514129 40.522131 7.297824 14.339585 23.109777 18.564641 34.952738 10.114529l167.593898-115.292823c17.348337-11.586897 16.708177-39.177794 0-50.700675L649.218305 467.892973C637.375344 459.506877 621.563391 464.052013 614.265566 478.391598zM640.384096 126.87972l0 148.709177c0 11.650913 4.993248 22.917729 12.035009 30.663666L653.315329 307.468867c8.258065 8.322081 19.716929 13.379345 32.072018 13.379345l146.852713 0L640.384096 126.87972z" p-id="27571"></path></svg>：HTML</p>
+<h2 id="关于我的一些评价"><a href="#关于我的一些评价" class="headerlink" title="关于我的一些评价"></a>关于我的一些评价</h2><blockquote>
+<p>噢我的上帝,ZDDR他真的太厉害了,噢要不是他,我根本不可能编写出Windows,我向我的靴子发誓!</p>
+<p><strong>比尔盖茨</strong><br><em>CEO, Microsoft Corporation.</em></p>
+</blockquote>
+<blockquote>
+<p>感谢他为Steam做出的卓越贡献！</p>
+<p><strong>加布·纽维尔</strong><br><em>CEO, Valve Software.</em></p>
+</blockquote>
+<blockquote>
+<p>他改变了世界！</p>
+<p><strong>唐纳德·特朗普</strong><br><em>USA President</em></p>
+</blockquote>
+</div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">ZDDR</div><div class="author-info__description">小猪Pwn老虎</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">1</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/01/12/hello-world/" title="Hello World"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2021/01/12/hello-world/" title="Hello World">Hello World</a><time datetime="2021-01-12T13:38:24.755Z" title="发表于 2021-01-12 21:38:24">2021-01-12</time></div></div></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2021/01/"><span class="card-archive-list-date">一月 2021</span><span class="card-archive-list-count">1</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">1</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2021-01-13T11:17:43.608Z"></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By ZDDR</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></div></body></html>
